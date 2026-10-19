@@ -1,5 +1,5 @@
 const https = require('https');
-const { mapWmoToIcons, getThermometerIcon, getHumidityDropletIcon } = require('./weather-icons');
+const { mapWmoToIcons, getPrecipitationIcon, getHumidityDropletIcon, getWindIcon } = require('./weather-icons');
 
 function fetchJson(url) {
   return new Promise((resolve, reject) => {
@@ -30,61 +30,99 @@ function mapWmoToText(code) {
   return 'Clear';
 }
 
+function getNextDayName(daysAhead) {
+  const d = new Date();
+  d.setDate(d.getDate() + daysAhead);
+  return d.toLocaleDateString('en-US', { weekday: 'long' });
+}
+
 // Delhi Coordinates: Latitude: 28.6139, Longitude: 77.2090
 async function getFigmaWeatherData(lat = 28.6139, lon = 77.2090) {
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia%2FKolkata`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation,weather_code,is_day&daily=weather_code,precipitation_probability_max,temperature_2m_max,temperature_2m_min&timezone=Asia%2FKolkata`;
     const data = await fetchJson(url);
     const current = data.current || {};
     const daily = data.daily || {};
 
     const currentCode = current.weather_code ?? 0;
     const isDay = current.is_day === 1;
-    const todayCode = (daily.weather_code && daily.weather_code[0] !== undefined) ? daily.weather_code[0] : currentCode;
-    const tomorrowCode = (daily.weather_code && daily.weather_code[1] !== undefined) ? daily.weather_code[1] : 0;
+
+    // Next 3 days forecast: Index 1 (tomorrow), Index 2 (day after tomorrow), Index 3 (in 3 days)
+    const day1Code = (daily.weather_code && daily.weather_code[1] !== undefined) ? daily.weather_code[1] : 0;
+    const day2Code = (daily.weather_code && daily.weather_code[2] !== undefined) ? daily.weather_code[2] : 0;
+    const day3Code = (daily.weather_code && daily.weather_code[3] !== undefined) ? daily.weather_code[3] : 0;
 
     const currentIconSet = mapWmoToIcons(currentCode, isDay);
-    const todayIconSet = mapWmoToIcons(todayCode, true);
-    const tomorrowIconSet = mapWmoToIcons(tomorrowCode, true);
+    const day1IconSet = mapWmoToIcons(day1Code, true);
+    const day2IconSet = mapWmoToIcons(day2Code, true);
+    const day3IconSet = mapWmoToIcons(day3Code, true);
+
+    // Precipitation percentage (from daily forecast or current precipitation)
+    const precipProb = (daily.precipitation_probability_max && daily.precipitation_probability_max[0] !== undefined)
+      ? daily.precipitation_probability_max[0]
+      : (current.precipitation ? Math.round(current.precipitation * 10) : 0);
+
+    const windSpeed = Math.round(current.wind_speed_10m ?? 6);
+    const humidity = Math.round(current.relative_humidity_2m ?? 80);
 
     return {
       location: 'Delhi',
       tempNow: Math.round(current.temperature_2m ?? 28),
-      feelsLike: Math.round(current.apparent_temperature ?? 20),
-      humidity: Math.round(current.relative_humidity_2m ?? 64),
-      rightNowDesc: mapWmoToText(currentCode),
-      rightNowIcon: currentIconSet.small,
       heroIcon: currentIconSet.hero,
-      forecastToday1: mapWmoToText(todayCode),
-      forecastToday1Icon: todayIconSet.small,
-      forecastToday2: mapWmoToText(todayCode),
-      forecastToday2Icon: todayIconSet.small,
-      forecastTomorrow: mapWmoToText(tomorrowCode),
-      forecastTomorrowIcon: tomorrowIconSet.small,
-      thermometerIcon: getThermometerIcon(),
-      humidityIcon: getHumidityDropletIcon()
+
+      // Left Column: 3 Days Forward Forecast
+      forecastDay1Name: getNextDayName(1),
+      forecastDay1Desc: mapWmoToText(day1Code),
+      forecastDay1Icon: day1IconSet.small,
+
+      forecastDay2Name: getNextDayName(2),
+      forecastDay2Desc: mapWmoToText(day2Code),
+      forecastDay2Icon: day2IconSet.small,
+
+      forecastDay3Name: getNextDayName(3),
+      forecastDay3Desc: mapWmoToText(day3Code),
+      forecastDay3Icon: day3IconSet.small,
+
+      // Right Column: Precipitation, Humidity, Wind
+      precipitation: `${precipProb}%`,
+      precipitationIcon: getPrecipitationIcon(),
+
+      humidity: `${humidity}%`,
+      humidityIcon: getHumidityDropletIcon(),
+
+      wind: `${windSpeed} km/h`,
+      windIcon: getWindIcon()
     };
   } catch (err) {
-    // Robust fallback matching Figma default states
-    const defaultIconSet = mapWmoToIcons(1, true);
-    const rainIconSet = mapWmoToIcons(61, true);
+    // Graceful offline fallback
+    const sunIcons = mapWmoToIcons(0, true);
+    const cloudyIcons = mapWmoToIcons(1, true);
 
     return {
       location: 'Delhi',
       tempNow: 28,
-      feelsLike: 20,
-      humidity: 64,
-      rightNowDesc: 'Light Rain',
-      rightNowIcon: rainIconSet.small,
-      heroIcon: defaultIconSet.hero,
-      forecastToday1: 'Sunny',
-      forecastToday1Icon: defaultIconSet.small,
-      forecastToday2: 'Sunny',
-      forecastToday2Icon: defaultIconSet.small,
-      forecastTomorrow: 'Sunny',
-      forecastTomorrowIcon: defaultIconSet.small,
-      thermometerIcon: getThermometerIcon(),
-      humidityIcon: getHumidityDropletIcon()
+      heroIcon: cloudyIcons.hero,
+
+      forecastDay1Name: getNextDayName(1),
+      forecastDay1Desc: 'Sunny',
+      forecastDay1Icon: sunIcons.small,
+
+      forecastDay2Name: getNextDayName(2),
+      forecastDay2Desc: 'Partly Cloudy',
+      forecastDay2Icon: cloudyIcons.small,
+
+      forecastDay3Name: getNextDayName(3),
+      forecastDay3Desc: 'Sunny',
+      forecastDay3Icon: sunIcons.small,
+
+      precipitation: '0%',
+      precipitationIcon: getPrecipitationIcon(),
+
+      humidity: '80%',
+      humidityIcon: getHumidityDropletIcon(),
+
+      wind: '6 km/h',
+      windIcon: getWindIcon()
     };
   }
 }

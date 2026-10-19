@@ -76,7 +76,7 @@ function renderFigmaWeather(data) {
         </div>
       </section>
 
-      <!-- Row 2: Left Column (Forecast) & Right Column (Metrics) -->
+      <!-- Row 2: Left Column (Next 3 Days Forecast) & Right Column (Precipitation / Humidity / Wind) -->
       <!-- Left Column: (285x335 at x=10, y=355) -->
       <section style="
         position: absolute;
@@ -90,53 +90,53 @@ function renderFigmaWeather(data) {
         gap: 38px;
         padding-left: 40px;
       ">
-        <!-- Forecast Item 1: Today -->
+        <!-- Day +1 (e.g., Wednesday) -->
         <div style="display: flex; align-items: center; gap: 16px;">
           <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
-            ${data.forecastToday1Icon}
+            ${data.forecastDay1Icon}
           </div>
           <div style="display: flex; flex-direction: column;">
             <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.6px; color: var(--color-ink);">
-              ${data.forecastToday1}
+              ${data.forecastDay1Desc}
             </span>
             <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 25.5px; color: var(--color-subtext);">
-              Today
+              ${data.forecastDay1Name}
             </span>
           </div>
         </div>
 
-        <!-- Forecast Item 2: Today (Afternoon/Evening) -->
+        <!-- Day +2 (e.g., Thursday) -->
         <div style="display: flex; align-items: center; gap: 16px;">
           <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
-            ${data.forecastToday2Icon}
+            ${data.forecastDay2Icon}
           </div>
           <div style="display: flex; flex-direction: column;">
             <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.6px; color: var(--color-ink);">
-              ${data.forecastToday2}
+              ${data.forecastDay2Desc}
             </span>
             <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 25.5px; color: var(--color-subtext);">
-              Today
+              ${data.forecastDay2Name}
             </span>
           </div>
         </div>
 
-        <!-- Forecast Item 3: Tomorrow -->
+        <!-- Day +3 (e.g., Friday) -->
         <div style="display: flex; align-items: center; gap: 16px;">
           <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
-            ${data.forecastTomorrowIcon}
+            ${data.forecastDay3Icon}
           </div>
           <div style="display: flex; flex-direction: column;">
             <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.6px; color: var(--color-ink);">
-              ${data.forecastTomorrow}
+              ${data.forecastDay3Desc}
             </span>
             <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 25.5px; color: var(--color-subtext);">
-              Tomorrow
+              ${data.forecastDay3Name}
             </span>
           </div>
         </div>
       </section>
 
-      <!-- Right Column: Metrics (285x335 at x=305, y=355) -->
+      <!-- Right Column: Environmental Metrics (285x335 at x=305, y=355) -->
       <section style="
         position: absolute;
         top: 355px;
@@ -149,17 +149,17 @@ function renderFigmaWeather(data) {
         gap: 38px;
         padding-left: 40px;
       ">
-        <!-- Metric 1: Feels Like -->
+        <!-- Metric 1: Precipitation -->
         <div style="display: flex; align-items: center; gap: 16px;">
           <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
-            ${data.thermometerIcon}
+            ${data.precipitationIcon}
           </div>
           <div style="display: flex; flex-direction: column;">
             <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.6px; color: var(--color-ink);">
-              ${data.feelsLike}&deg;
+              ${data.precipitation}
             </span>
             <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 25.5px; color: var(--color-subtext);">
-              Feels Like
+              Precipitation
             </span>
           </div>
         </div>
@@ -171,7 +171,7 @@ function renderFigmaWeather(data) {
           </div>
           <div style="display: flex; flex-direction: column;">
             <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.6px; color: var(--color-ink);">
-              ${data.humidity}%
+              ${data.humidity}
             </span>
             <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 25.5px; color: var(--color-subtext);">
               Humidity
@@ -179,17 +179,17 @@ function renderFigmaWeather(data) {
           </div>
         </div>
 
-        <!-- Metric 3: Right Now -->
+        <!-- Metric 3: Wind -->
         <div style="display: flex; align-items: center; gap: 16px;">
           <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
-            ${data.rightNowIcon}
+            ${data.windIcon}
           </div>
           <div style="display: flex; flex-direction: column;">
             <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.6px; color: var(--color-ink);">
-              ${data.rightNowDesc}
+              ${data.wind}
             </span>
             <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 25.5px; color: var(--color-subtext);">
-              Right Now
+              Wind
             </span>
           </div>
         </div>

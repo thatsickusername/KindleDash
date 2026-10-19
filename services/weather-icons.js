@@ -65,20 +65,33 @@ function getSmallFog() {
   </svg>`;
 }
 
-// Fixed metrics icons from design
-function getThermometerIcon() {
-  return `<svg width="24" height="34" viewBox="0 0 24 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15.4 20.4V5.7C15.4 3.8 13.9 2.3 12 2.3C10.1 2.3 8.6 3.8 8.6 5.7V20.4C6.6 21.9 5.9 24.4 6.6 26.7C7.4 29 9.6 30.6 12 30.6C14.4 30.6 16.6 29 17.4 26.7C18.1 24.4 17.4 21.9 15.4 20.4Z" stroke="${COLOR_INK}" stroke-width="2.8" stroke-linecap="round"/>
-    <circle cx="12" cy="24.9" r="3.2" fill="${COLOR_INK}"/>
-    <path d="M12 13.6V21.5" stroke="${COLOR_INK}" stroke-width="2.8" stroke-linecap="round"/>
+// -------------------------------------------------------------
+// Right Column Environmental Metrics Icons (Precipitation, Humidity, Wind)
+// -------------------------------------------------------------
+
+// 1. Precipitation icon (Cloud with raindrops or umbrella)
+function getPrecipitationIcon() {
+  return `<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M8 19H25A4.5 4.5 0 0 0 25 10A6 6 0 0 0 13 11A4.5 4.5 0 0 0 8 19Z" stroke="${COLOR_INK}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10 23L9 27M16 23L15 27M22 23L21 27" stroke="${COLOR_INK}" stroke-width="2.5" stroke-linecap="round"/>
   </svg>`;
 }
 
+// 2. Humidity droplet icon
 function getHumidityDropletIcon() {
-  return `<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M11 6C11 6 7 11 7 14.5C7 16.7 8.8 18.5 11 18.5C13.2 18.5 15 16.7 15 14.5C15 11 11 6 11 6Z" fill="${COLOR_INK}"/>
-    <circle cx="19.5" cy="11.5" r="2.8" fill="${COLOR_INK}"/>
-    <circle cx="19" cy="20.5" r="3.2" fill="${COLOR_INK}"/>
+  return `<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14 8C14 8 9 14.2 9 18.5C9 21.2 11.2 23.5 14 23.5C16.8 23.5 19 21.2 19 18.5C19 14.2 14 8 14 8Z" fill="${COLOR_INK}"/>
+    <circle cx="23.5" cy="14.5" r="3.2" fill="${COLOR_INK}"/>
+    <circle cx="23" cy="24.5" r="3.6" fill="${COLOR_INK}"/>
+  </svg>`;
+}
+
+// 3. Wind icon (Breeze streamlines)
+function getWindIcon() {
+  return `<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 12H21A3.5 3.5 0 1 0 17.5 8.5" stroke="${COLOR_INK}" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M4 17H25A3.5 3.5 0 1 1 21.5 20.5" stroke="${COLOR_INK}" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M8 22H18A3 3 0 1 0 15 19" stroke="${COLOR_INK}" stroke-width="2.6" stroke-linecap="round"/>
   </svg>`;
 }
 
@@ -107,7 +120,6 @@ function getHeroPartlyCloudy(isDay = true) {
       <path d="M56 160H150A34 34 0 0 0 150 92A48 48 0 0 0 66 104A32 32 0 0 0 56 160Z" fill="#ffffff" stroke="${COLOR_INK}" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>`;
   }
-  // The iconic Figma hero visual
   return `<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M72 82A40 40 0 0 1 115 45M100 18V28M42 42L49 49M144 58L153 50" stroke="${COLOR_INK}" stroke-width="13" stroke-linecap="round"/>
     <path d="M52 160H150A34 34 0 0 0 150 92A48 48 0 0 0 66 104A32 32 0 0 0 52 160Z" fill="#ffffff" stroke="${COLOR_INK}" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
@@ -154,49 +166,42 @@ function getHeroFog() {
 // -------------------------------------------------------------
 
 function mapWmoToIcons(code, isDay = true) {
-  // 0: Clear
   if (code === 0) {
     return {
       hero: isDay ? getHeroSun() : getHeroMoon(),
       small: isDay ? getSmallSun() : getSmallMoon()
     };
   }
-  // 1, 2: Mainly Clear / Partly Cloudy
   if (code === 1 || code === 2) {
     return {
       hero: getHeroPartlyCloudy(isDay),
       small: getSmallPartlyCloudy()
     };
   }
-  // 3: Overcast
   if (code === 3) {
     return {
       hero: getHeroCloud(),
       small: getSmallCloud()
     };
   }
-  // 45, 48: Fog
   if (code === 45 || code === 48) {
     return {
       hero: getHeroFog(),
       small: getSmallFog()
     };
   }
-  // 51-67, 80-82: Drizzle & Rain
   if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
     return {
       hero: getHeroRain(),
       small: getSmallRain()
     };
   }
-  // 71-77, 85-86: Snow
   if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) {
     return {
       hero: getHeroSnow(),
       small: getSmallSnow()
     };
   }
-  // 95-99: Thunderstorm
   if (code >= 95) {
     return {
       hero: getHeroThunderstorm(),
@@ -204,7 +209,6 @@ function mapWmoToIcons(code, isDay = true) {
     };
   }
 
-  // Fallback
   return {
     hero: getHeroPartlyCloudy(isDay),
     small: getSmallPartlyCloudy()
@@ -213,6 +217,7 @@ function mapWmoToIcons(code, isDay = true) {
 
 module.exports = {
   mapWmoToIcons,
-  getThermometerIcon,
-  getHumidityDropletIcon
+  getPrecipitationIcon,
+  getHumidityDropletIcon,
+  getWindIcon
 };
