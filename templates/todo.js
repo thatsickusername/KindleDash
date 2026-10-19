@@ -1,4 +1,4 @@
-const { renderHtmlShell } = require('./layout');
+const { renderAppShell } = require('./figma-layout');
 
 const DEFAULT_TODOS = [
   { id: 1, text: 'Review quarterly priorities', completed: false },
@@ -10,14 +10,30 @@ const DEFAULT_TODOS = [
 
 function renderTodo() {
   const bodyContent = `
-    <header class="meta-bar">
-      <div>TODOS // DAILY FOCUS</div>
-      <div id="todo-count">ACTIVE: 4</div>
-    </header>
+    <!-- Top Content Area (600x700px) -->
+    <main style="
+      width: 600px;
+      height: 700px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      overflow: hidden;
+      padding: 35px 30px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    ">
+      <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: baseline;">
+        <h1 style="font-family: var(--font-main); font-size: 28px; font-weight: 700; color: var(--color-ink); letter-spacing: -0.5px;">
+          Daily Focus
+        </h1>
+        <span id="todo-count" style="font-family: var(--font-main); font-size: 16px; font-weight: 500; color: var(--color-subtext);">
+          Remaining: 4
+        </span>
+      </div>
 
-    <main class="content-zone" style="justify-content: flex-start; padding: 1rem; width: 100%;">
-      <div id="todo-list" style="width: 100%; display: flex; flex-direction: column; gap: 0.75rem; max-width: 540px;">
-        <!-- Populated via client-side state preserved in localStorage -->
+      <div id="todo-list" style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
+        <!-- Injected via client script -->
       </div>
     </main>
 
@@ -53,32 +69,36 @@ function renderTodo() {
             if (!item.completed) pendingCount++;
 
             var row = document.createElement('div');
-            row.className = 'tactile';
             row.style.display = 'flex';
             row.style.alignItems = 'center';
-            row.style.border = 'var(--border-thick)';
-            row.style.padding = '0.85rem 1rem';
+            row.style.padding = '14px 18px';
+            row.style.borderRadius = '12px';
+            row.style.border = '1px solid var(--color-bar-border)';
+            row.style.backgroundColor = item.completed ? '#f5f5f5' : '#ffffff';
             row.style.cursor = 'pointer';
-            row.style.minHeight = '3.5rem';
+            row.style.minHeight = '56px';
 
             var box = document.createElement('div');
-            box.style.width = '1.75rem';
-            box.style.height = '1.75rem';
-            box.style.border = 'var(--border-thick)';
-            box.style.marginRight = '1rem';
+            box.style.width = '24px';
+            box.style.height = '24px';
+            box.style.borderRadius = '6px';
+            box.style.border = '2px solid var(--color-ink)';
+            box.style.marginRight = '16px';
             box.style.flexShrink = '0';
             box.style.display = 'flex';
             box.style.alignItems = 'center';
             box.style.justifyContent = 'center';
-            box.style.backgroundColor = item.completed ? '#000000' : '#ffffff';
+            box.style.backgroundColor = item.completed ? 'var(--color-ink)' : 'transparent';
 
             if (item.completed) {
-              box.innerHTML = '<span style="color: #ffffff; font-weight: 900; font-size: 1.2rem; line-height: 1;">&#10003;</span>';
+              box.innerHTML = '<span style="color: #ffffff; font-weight: 700; font-size: 16px; line-height: 1;">&#10003;</span>';
             }
 
             var text = document.createElement('div');
-            text.style.fontSize = '1.2rem';
-            text.style.fontWeight = '700';
+            text.style.fontFamily = 'var(--font-main)';
+            text.style.fontSize = '19px';
+            text.style.fontWeight = '500';
+            text.style.color = item.completed ? 'var(--color-subtext)' : 'var(--color-ink)';
             text.style.textDecoration = item.completed ? 'line-through' : 'none';
             text.textContent = item.text;
 
@@ -95,7 +115,7 @@ function renderTodo() {
           });
 
           var countEl = document.getElementById('todo-count');
-          if (countEl) countEl.textContent = 'REMAINING: ' + pendingCount;
+          if (countEl) countEl.textContent = 'Remaining: ' + pendingCount;
         }
 
         render();
@@ -103,11 +123,11 @@ function renderTodo() {
     </script>
   `;
 
-  return renderHtmlShell({
+  return renderAppShell({
     title: 'KindleDash // Todos',
     bodyContent,
-    showActionBar: true,
-    appName: 'TODOS'
+    currentAppName: 'Todos',
+    backUrl: '/'
   });
 }
 

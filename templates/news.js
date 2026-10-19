@@ -1,44 +1,40 @@
-const { renderHtmlShell } = require('./layout');
+const { renderAppShell } = require('./figma-layout');
 
 function renderNews(newsItems) {
   const serializedNews = JSON.stringify(newsItems);
 
   const bodyContent = `
-    <header class="meta-bar">
-      <div>NEWS // FEED READER</div>
-      <div id="page-indicator">PAGE 1 OF 1</div>
-    </header>
+    <!-- Top Content Area (600x700px) -->
+    <main style="
+      width: 600px;
+      height: 700px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      overflow: hidden;
+      padding: 30px 25px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    ">
+      <div style="margin-bottom: 18px; display: flex; justify-content: space-between; align-items: baseline;">
+        <h1 style="font-family: var(--font-main); font-size: 28px; font-weight: 700; color: var(--color-ink); letter-spacing: -0.5px;">
+          Headlines
+        </h1>
+        <span id="page-indicator" style="font-family: var(--font-main); font-size: 15px; font-weight: 500; color: var(--color-subtext);">
+          Page 1 of 1
+        </span>
+      </div>
 
-    <main class="content-zone" style="justify-content: flex-start; padding: 0.75rem; width: 100%;">
       <div id="news-container" style="
-        width: 100%;
-        max-width: 580px;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 14px;
+        width: 100%;
       ">
-        <!-- Injected via client pagination script to strictly prevent scrolling -->
+        <!-- Injected via client pagination script -->
       </div>
     </main>
-
-    <!-- Custom Pagination Action Bar -->
-    <footer class="action-bar" style="border-top: var(--border-thick);">
-      <a href="/" class="action-bar-btn tactile" aria-label="Go Back">
-        &#9664; HOME
-      </a>
-
-      <div style="display: flex; align-items: stretch;">
-        <button id="btn-prev" class="action-bar-btn tactile" style="font-size: 1.1rem; border-right: none; border-left: var(--border-thick);">
-          &laquo; PREV
-        </button>
-        <button id="btn-next" class="action-bar-btn tactile" style="font-size: 1.1rem; border-right: none; border-left: var(--border-thick);">
-          NEXT &raquo;
-        </button>
-        <div class="action-bar-title" style="border-left: var(--border-thick);">
-          APP // NEWS
-        </div>
-      </div>
-    </footer>
 
     <script>
       (function() {
@@ -62,22 +58,25 @@ function renderNews(newsItems) {
           for (var i = start; i < end; i++) {
             var item = items[i];
             var card = document.createElement('article');
-            card.style.border = 'var(--border-thick)';
-            card.style.padding = '0.75rem 0.9rem';
-            card.style.backgroundColor = 'var(--canvas)';
+            card.style.border = '1px solid var(--color-bar-border)';
+            card.style.borderRadius = '12px';
+            card.style.padding = '14px 18px';
+            card.style.backgroundColor = '#ffffff';
 
             var title = document.createElement('h2');
-            title.style.fontFamily = 'var(--font-serif)';
-            title.style.fontSize = '1.18rem';
-            title.style.fontWeight = '900';
-            title.style.lineHeight = '1.25';
-            title.style.marginBottom = '0.35rem';
+            title.style.fontFamily = 'var(--font-main)';
+            title.style.fontSize = '18px';
+            title.style.fontWeight = '700';
+            title.style.lineHeight = '23px';
+            title.style.color = 'var(--color-ink)';
+            title.style.marginBottom = '6px';
             title.textContent = item.title;
 
             var desc = document.createElement('p');
-            desc.style.fontFamily = 'var(--font-sans)';
-            desc.style.fontSize = '0.95rem';
-            desc.style.lineHeight = '1.35';
+            desc.style.fontFamily = 'var(--font-main)';
+            desc.style.fontSize = '14.5px';
+            desc.style.lineHeight = '20px';
+            desc.style.color = 'var(--color-subtext)';
             desc.textContent = item.description;
 
             card.appendChild(title);
@@ -86,16 +85,16 @@ function renderNews(newsItems) {
           }
 
           if (indicator) {
-            indicator.textContent = 'PAGE ' + (page + 1) + ' OF ' + totalPages;
+            indicator.textContent = 'Page ' + (page + 1) + ' of ' + totalPages;
           }
 
           if (btnPrev) {
             btnPrev.disabled = (page === 0);
-            btnPrev.style.opacity = (page === 0) ? '0.4' : '1';
+            btnPrev.style.opacity = (page === 0) ? '0.3' : '1';
           }
           if (btnNext) {
             btnNext.disabled = (page >= totalPages - 1);
-            btnNext.style.opacity = (page >= totalPages - 1) ? '0.4' : '1';
+            btnNext.style.opacity = (page >= totalPages - 1) ? '0.3' : '1';
           }
         }
 
@@ -125,10 +124,40 @@ function renderNews(newsItems) {
     </script>
   `;
 
-  return renderHtmlShell({
+  // Pagination buttons seamlessly housed in the common bottom bar
+  const paginationControls = `
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button id="btn-prev" style="
+        font-family: var(--font-main);
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--color-bar-text);
+        background: transparent;
+        border: 1px solid var(--color-bar-border);
+        border-radius: 8px;
+        padding: 6px 12px;
+        cursor: pointer;
+      ">&laquo; Prev</button>
+      <button id="btn-next" style="
+        font-family: var(--font-main);
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--color-bar-text);
+        background: transparent;
+        border: 1px solid var(--color-bar-border);
+        border-radius: 8px;
+        padding: 6px 12px;
+        cursor: pointer;
+      ">Next &raquo;</button>
+    </div>
+  `;
+
+  return renderAppShell({
     title: 'KindleDash // News',
     bodyContent,
-    showActionBar: false // We use custom pagination bar
+    currentAppName: 'News',
+    backUrl: '/',
+    rightSlotHtml: paginationControls
   });
 }
 

@@ -1,4 +1,12 @@
-function renderFigmaShell({ title, headExtras = '', bodyContent, currentAppName = 'Weather Delhi', backUrl = '/' }) {
+function renderAppShell({ 
+  title, 
+  headExtras = '', 
+  bodyContent, 
+  showBottomBar = true, 
+  currentAppName = 'App', 
+  backUrl = '/',
+  rightSlotHtml = '' 
+}) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,16 +22,21 @@ function renderFigmaShell({ title, headExtras = '', bodyContent, currentAppName 
   <div class="device-screen">
     ${bodyContent}
 
+    ${showBottomBar ? `
     <!-- Reusable Common Bottom Bar across all apps -->
     <div class="common-bottom-bar-wrapper">
       <nav class="common-bottom-bar">
         <a href="${backUrl}" class="bar-btn-back" aria-label="Go Back">Back</a>
-        <span class="bar-title">${currentAppName}</span>
+        <div style="display: flex; align-items: center; gap: 14px;">
+          ${rightSlotHtml}
+          <span class="bar-title">${currentAppName}</span>
+        </div>
       </nav>
     </div>
+    ` : ''}
   </div>
 </body>
 </html>`;
 }
 
-module.exports = { renderFigmaShell };
+module.exports = { renderAppShell, renderFigmaShell: renderAppShell };
