@@ -128,7 +128,7 @@
 ## Phase 7: Deployment & Real-Device Validation
 
 - [ ] **7.1 Production Deployment**
-  - [ ] Commit repository to GitHub.
+  - [x] Commit repository to GitHub.
   - [ ] Deploy to Vercel free tier with automatic HTTPS certificate generation.
   - *Verification Criteria:*
     - Live URL loads over public HTTPS without CORS or security warnings.
