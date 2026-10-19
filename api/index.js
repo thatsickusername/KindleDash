@@ -111,7 +111,7 @@ async function handler(req, res) {
 
       default:
         res.statusCode = 404;
-        return res.end(renderLauncher());
+        return res.end(`<!-- DEBUG: urlPath=${urlPath} req.url=${req.url} x-matched-path=${req.headers['x-matched-path']} -->` + renderLauncher());
     }
   } catch (error) {
     res.statusCode = 500;
