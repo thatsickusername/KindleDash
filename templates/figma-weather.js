@@ -4,193 +4,199 @@ function renderFigmaWeather(data) {
   const headExtras = `<meta http-equiv="refresh" content="900">`;
 
   const bodyContent = `
-    <!-- Top Content Area (600x700px in Figma Frame 1) -->
+    <!-- Main Screen Content Flex Container (600px width x 705px height, leaving 85px for bottom bar) -->
     <main style="
       width: 600px;
-      height: 700px;
+      height: 705px;
       position: absolute;
       top: 0;
       left: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px 28px 12px 28px;
+      box-sizing: border-box;
       overflow: hidden;
     ">
-      <!-- Row 1: Hero Weather Icon (left) and Temperature (right) -->
-      <!-- Weather Icon Hero: (285x335 at x=10, y=10) -->
+      <!-- Section 1: Hero Weather Visual & Temperature Now (Height ~290px) -->
       <section style="
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        width: 285px;
-        height: 335px;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: space-around;
+        width: 100%;
+        height: 290px;
       ">
-        <div style="width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
-          ${data.heroIcon}
-        </div>
-      </section>
-
-      <!-- Current Temperature: (285x335 at x=305, y=10) -->
-      <section style="
-        position: absolute;
-        top: 10px;
-        left: 305px;
-        width: 285px;
-        height: 335px;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: center;
-        padding-left: 20px;
-      ">
-        <!-- Number & Degree symbol group -->
-        <div style="display: flex; align-items: flex-start; line-height: 0.85; position: relative;">
-          <span style="
-            font-family: var(--font-hero-num);
-            font-size: 180px;
-            font-weight: 300;
-            color: var(--color-ink);
-            letter-spacing: -2px;
-          ">${data.tempNow}</span>
-          <span style="
-            font-family: var(--font-main);
-            font-size: 96px;
-            font-weight: 400;
-            color: var(--color-ink);
-            line-height: 1;
-            margin-left: 4px;
-            margin-top: 10px;
-          ">&deg;</span>
-        </div>
-
-        <!-- Subtext: Temperature Now -->
+        <!-- Hero Weather Icon (left) -->
         <div style="
-          font-family: var(--font-main);
-          font-size: 19px;
-          font-weight: 500;
-          color: var(--color-ink);
-          margin-top: 18px;
-          letter-spacing: 0px;
+          width: 250px;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         ">
-          Temperature Now
-        </div>
-      </section>
-
-      <!-- Row 2: Left Column (Next 3 Days Forecast) & Right Column (Precipitation / Humidity / Wind) -->
-      <!-- Left Column: (285x335 at x=10, y=355) -->
-      <section style="
-        position: absolute;
-        top: 355px;
-        left: 10px;
-        width: 285px;
-        height: 335px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 38px;
-        padding-left: 40px;
-      ">
-        <!-- Day +1 (e.g., Wednesday) -->
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
-            ${data.forecastDay1Icon}
-          </div>
-          <div style="display: flex; flex-direction: column;">
-            <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.6px; color: var(--color-ink);">
-              ${data.forecastDay1Desc}
-            </span>
-            <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 25.5px; color: var(--color-subtext);">
-              ${data.forecastDay1Name}
-            </span>
+          <div style="width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
+            ${data.heroIcon}
           </div>
         </div>
 
-        <!-- Day +2 (e.g., Thursday) -->
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
-            ${data.forecastDay2Icon}
+        <!-- Hero Temperature & Label (right) -->
+        <div style="
+          width: 250px;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+          padding-left: 10px;
+        ">
+          <!-- Number & Degree symbol group -->
+          <div style="display: flex; align-items: flex-start; line-height: 0.85; position: relative;">
+            <span style="
+              font-family: var(--font-hero-num);
+              font-size: 170px;
+              font-weight: 300;
+              color: var(--color-ink);
+              letter-spacing: -3px;
+            ">${data.tempNow}</span>
+            <span style="
+              font-family: var(--font-main);
+              font-size: 88px;
+              font-weight: 400;
+              color: var(--color-ink);
+              line-height: 1;
+              margin-left: 4px;
+              margin-top: 10px;
+            ">&deg;</span>
           </div>
-          <div style="display: flex; flex-direction: column;">
-            <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.6px; color: var(--color-ink);">
-              ${data.forecastDay2Desc}
-            </span>
-            <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 25.5px; color: var(--color-subtext);">
-              ${data.forecastDay2Name}
-            </span>
-          </div>
-        </div>
 
-        <!-- Day +3 (e.g., Friday) -->
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
-            ${data.forecastDay3Icon}
-          </div>
-          <div style="display: flex; flex-direction: column;">
-            <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.6px; color: var(--color-ink);">
-              ${data.forecastDay3Desc}
-            </span>
-            <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 25.5px; color: var(--color-subtext);">
-              ${data.forecastDay3Name}
-            </span>
+          <!-- Subtext: Temperature Now -->
+          <div style="
+            font-family: var(--font-main);
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--color-ink);
+            margin-top: 18px;
+            letter-spacing: -0.2px;
+          ">
+            Temperature Now
           </div>
         </div>
       </section>
 
-      <!-- Right Column: Environmental Metrics (285x335 at x=305, y=355) -->
+      <!-- Section 2: 2-Column Metrics Grid (Fills the remaining ~380px gracefully down to the bottom bar) -->
       <section style="
-        position: absolute;
-        top: 355px;
-        left: 305px;
-        width: 285px;
-        height: 335px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 38px;
-        padding-left: 40px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        width: 100%;
+        height: 360px;
+        gap: 20px;
+        align-items: stretch;
       ">
-        <!-- Metric 1: Precipitation -->
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
-            ${data.precipitationIcon}
+        <!-- Left Column: Next 3 Days Forecast -->
+        <div style="
+          display: flex;
+          flex-direction: column;
+          justify-content: space-around;
+          padding-left: 20px;
+          height: 100%;
+        ">
+          <!-- Forecast Day +1 -->
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              ${data.forecastDay1Icon}
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.5px; color: var(--color-ink);">
+                ${data.forecastDay1Desc}
+              </span>
+              <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 24px; color: var(--color-subtext);">
+                ${data.forecastDay1Name}
+              </span>
+            </div>
           </div>
-          <div style="display: flex; flex-direction: column;">
-            <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.6px; color: var(--color-ink);">
-              ${data.precipitation}
-            </span>
-            <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 25.5px; color: var(--color-subtext);">
-              Precipitation
-            </span>
+
+          <!-- Forecast Day +2 -->
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              ${data.forecastDay2Icon}
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.5px; color: var(--color-ink);">
+                ${data.forecastDay2Desc}
+              </span>
+              <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 24px; color: var(--color-subtext);">
+                ${data.forecastDay2Name}
+              </span>
+            </div>
+          </div>
+
+          <!-- Forecast Day +3 -->
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              ${data.forecastDay3Icon}
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.5px; color: var(--color-ink);">
+                ${data.forecastDay3Desc}
+              </span>
+              <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 24px; color: var(--color-subtext);">
+                ${data.forecastDay3Name}
+              </span>
+            </div>
           </div>
         </div>
 
-        <!-- Metric 2: Humidity -->
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
-            ${data.humidityIcon}
+        <!-- Right Column: Environmental Metrics (Precipitation, Humidity, Wind) -->
+        <div style="
+          display: flex;
+          flex-direction: column;
+          justify-content: space-around;
+          padding-left: 20px;
+          height: 100%;
+        ">
+          <!-- Metric 1: Precipitation -->
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              ${data.precipitationIcon}
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.5px; color: var(--color-ink);">
+                ${data.precipitation}
+              </span>
+              <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 24px; color: var(--color-subtext);">
+                Precipitation
+              </span>
+            </div>
           </div>
-          <div style="display: flex; flex-direction: column;">
-            <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.6px; color: var(--color-ink);">
-              ${data.humidity}
-            </span>
-            <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 25.5px; color: var(--color-subtext);">
-              Humidity
-            </span>
-          </div>
-        </div>
 
-        <!-- Metric 3: Wind -->
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
-            ${data.windIcon}
+          <!-- Metric 2: Humidity -->
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              ${data.humidityIcon}
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.5px; color: var(--color-ink);">
+                ${data.humidity}
+              </span>
+              <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 24px; color: var(--color-subtext);">
+                Humidity
+              </span>
+            </div>
           </div>
-          <div style="display: flex; flex-direction: column;">
-            <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.6px; color: var(--color-ink);">
-              ${data.wind}
-            </span>
-            <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 25.5px; color: var(--color-subtext);">
-              Wind
-            </span>
+
+          <!-- Metric 3: Wind -->
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              ${data.windIcon}
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-family: var(--font-main); font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: -0.5px; color: var(--color-ink);">
+                ${data.wind}
+              </span>
+              <span style="font-family: var(--font-main); font-size: 17px; font-weight: 500; line-height: 24px; color: var(--color-subtext);">
+                Wind
+              </span>
+            </div>
           </div>
         </div>
       </section>

@@ -9,9 +9,9 @@
   --color-bar-border: #a8a8a8;    /* rgba(0.66, 0.66, 0.66) */
   --color-bar-text: #464c52;
   
-  /* Typography Tokens */
-  --font-hero-num: 'Inter', sans-serif;
-  --font-main: 'Plus Jakarta Sans', sans-serif;
+  /* Typography Tokens with Kindle Native Fallbacks */
+  --font-hero-num: 'Inter', 'Amazon Ember', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-main: 'Plus Jakarta Sans', 'Amazon Ember', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   
   /* Hardware Viewport (Fixed for Kindle 10th Gen 600x800) */
   --screen-width: 600px;
