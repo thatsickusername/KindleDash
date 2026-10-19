@@ -11,15 +11,16 @@ const { getFigmaWeatherData } = require('../services/weather-figma');
 const { getNewsFeed } = require('../services/news');
 
 async function handler(req, res) {
-  // In Vercel serverless with rewrites, req.url may be rewritten to '/api/index.js'
-  // Vercel passes the original path in headers like 'x-matched-path' or 'x-now-route-matches'
-  let urlPath = req.headers['x-matched-path'] || req.url || '/';
-  if (urlPath.includes('?')) {
-    urlPath = urlPath.split('?')[0];
-  }
-  // If invoked directly as /api or /api/index.js without x-matched-path, check req.query or fallback
-  if (urlPath === '/api/index.js' || urlPath === '/api') {
-    urlPath = '/';
+  // Parse URL & Query params
+  const fullUrl = req.url || '/';
+  const urlObj = new URL(fullUrl, 'http://localhost');
+  const routeParam = urlObj.searchParams.get('route');
+  
+  let urlPath = urlObj.pathname;
+  if (routeParam) {
+    urlPath = '/' + routeParam;
+  } else if (urlPath.startsWith('/api/')) {
+    urlPath = urlPath.replace(/^\/api/, '');
   }
 
   // Handle static assets

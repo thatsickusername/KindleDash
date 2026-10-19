@@ -3,23 +3,23 @@
   "rewrites": [
     {
       "source": "/clock",
-      "destination": "/api/clock"
+      "destination": "/api/index.js?route=clock"
     },
     {
       "source": "/weather",
-      "destination": "/api/weather"
+      "destination": "/api/index.js?route=weather"
     },
     {
       "source": "/todo",
-      "destination": "/api/todo"
+      "destination": "/api/index.js?route=todo"
     },
     {
       "source": "/news",
-      "destination": "/api/news"
+      "destination": "/api/index.js?route=news"
     },
     {
       "source": "/(.*)",
-      "destination": "/api/index"
+      "destination": "/api/index.js?route=launcher"
     }
   ]
 }
