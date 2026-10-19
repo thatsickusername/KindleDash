@@ -14,13 +14,14 @@ async function handler(req, res) {
   // Parse URL & Query params
   const fullUrl = req.url || '/';
   const urlObj = new URL(fullUrl, 'http://localhost');
-  const routeParam = urlObj.searchParams.get('route');
+  const pathParam = urlObj.searchParams.get('path');
   
-  let urlPath = urlObj.pathname;
-  if (routeParam) {
-    urlPath = '/' + routeParam;
-  } else if (urlPath.startsWith('/api/')) {
-    urlPath = urlPath.replace(/^\/api/, '');
+  let urlPath = '/' + (pathParam || '').replace(/^\//, '');
+  if (!pathParam) {
+    urlPath = urlObj.pathname;
+    if (urlPath === '/api/index.js' || urlPath === '/api') {
+      urlPath = '/';
+    }
   }
 
   // Handle static assets
@@ -112,7 +113,7 @@ async function handler(req, res) {
 
       default:
         res.statusCode = 404;
-        return res.end(`<!-- DEBUG: urlPath=${urlPath} req.url=${req.url} x-matched-path=${req.headers['x-matched-path']} -->` + renderLauncher());
+        return res.end(renderLauncher());
     }
   } catch (error) {
     res.statusCode = 500;

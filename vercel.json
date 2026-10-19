@@ -2,24 +2,8 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/clock",
-      "destination": "/api/index.js?route=clock"
-    },
-    {
-      "source": "/weather",
-      "destination": "/api/index.js?route=weather"
-    },
-    {
-      "source": "/todo",
-      "destination": "/api/index.js?route=todo"
-    },
-    {
-      "source": "/news",
-      "destination": "/api/index.js?route=news"
-    },
-    {
       "source": "/(.*)",
-      "destination": "/api/index.js?route=launcher"
+      "destination": "/api/index.js?path=$1"
     }
   ]
 }
