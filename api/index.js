@@ -3,13 +3,50 @@ const path = require('path');
 const { renderLauncher } = require('../templates/launcher');
 const { renderClock } = require('../templates/clock');
 const { renderWeather } = require('../templates/weather');
+const { renderFigmaWeather } = require('../templates/figma-weather');
 const { renderTodo } = require('../templates/todo');
 const { renderNews } = require('../templates/news');
 const { getWeatherData } = require('../services/weather');
+const { getFigmaWeatherData } = require('../services/weather-figma');
 const { getNewsFeed } = require('../services/news');
 
 async function handler(req, res) {
   const urlPath = req.url ? req.url.split('?')[0] : '/';
+
+  // Handle static assets
+  if (urlPath === '/figma-tokens.css') {
+    const cssPath = path.join(__dirname, '..', 'public', 'figma-tokens.css');
+    try {
+      const css = fs.readFileSync(cssPath, 'utf8');
+      res.setHeader('Content-Type', 'text/css; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      return res.end(css);
+    } catch (err) {
+      res.statusCode = 404;
+      return res.end('/* CSS not found */');
+    }
+  }
+
+  if (urlPath.startsWith('/figma-assets/')) {
+    const assetPath = path.join(__dirname, '..', 'public', urlPath);
+    try {
+      const ext = path.extname(assetPath).toLowerCase();
+      const mimeTypes = {
+        '.png': 'image/png',
+        '.svg': 'image/svg+xml',
+        '.jpg': 'image/jpeg',
+        '.css': 'text/css'
+      };
+      const contentType = mimeTypes[ext] || 'application/octet-stream';
+      const fileBuffer = fs.readFileSync(assetPath);
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      return res.end(fileBuffer);
+    } catch (err) {
+      res.statusCode = 404;
+      return res.end('Asset not found');
+    }
+  }
 
   // Handle static assets
   if (urlPath === '/style.css') {
@@ -51,8 +88,8 @@ async function handler(req, res) {
         return res.end(renderClock());
 
       case '/weather': {
-        const weatherData = await getWeatherData();
-        return res.end(renderWeather(weatherData));
+        const weatherData = await getFigmaWeatherData();
+        return res.end(renderFigmaWeather(weatherData));
       }
 
       case '/todo':
