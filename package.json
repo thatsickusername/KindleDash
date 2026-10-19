@@ -1,0 +1,14 @@
+{
+  "name": "kindle-dash",
+  "version": "1.0.0",
+  "description": "High-contrast E-Ink desktop dashboard and touch launcher for Amazon Kindle 10th Gen",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
