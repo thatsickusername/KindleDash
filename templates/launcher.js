@@ -25,19 +25,8 @@ function renderLauncher() {
       <div style="font-family: var(--font-main); font-size: 22px; font-weight: 700; color: var(--color-ink); letter-spacing: -0.5px;">
         KindleDash
       </div>
-      <div id="meta-time" style="font-family: var(--font-main); font-size: 17px; font-weight: 500; color: var(--color-subtext); display: flex; align-items: center; gap: 14px;">
-        <span>${timeStr} &bull; ${dateStr}</span>
-        <button onclick="window.triggerKindleExit()" style="
-          background: var(--color-bar-bg);
-          border: 1px solid var(--color-bar-border);
-          border-radius: 8px;
-          padding: 6px 12px;
-          font-family: var(--font-main);
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--color-bar-text);
-          cursor: pointer;
-        " title="Exit to Kindle Home">&#10005; Exit</button>
+      <div id="meta-time" style="font-family: var(--font-main); font-size: 17px; font-weight: 500; color: var(--color-subtext);">
+        ${timeStr} &bull; ${dateStr}
       </div>
     </header>
 

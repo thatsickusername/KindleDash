@@ -30,22 +30,6 @@ function renderAppShell({
         <div style="display: flex; align-items: center; gap: 14px;">
           ${rightSlotHtml}
           <span class="bar-title">${currentAppName}</span>
-          <button onclick="window.triggerKindleExit()" class="bar-btn-exit" style="
-            background: transparent;
-            border: 1px solid var(--color-bar-border);
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-family: var(--font-main);
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--color-bar-text);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-          " title="Exit to Kindle Home">
-            &#10005; Exit
-          </button>
         </div>
       </nav>
     </div>
