@@ -1,0 +1,49 @@
+{
+  "general": {
+    "city": "San Francisco",
+    "lat": 37.7749,
+    "lon": -122.4194,
+    "units": "celsius",
+    "rssFeedUrl": "https://feeds.bbci.co.uk/news/world/rss.xml",
+    "refreshMinutes": 30,
+    "timezone": "Asia/Kolkata"
+  },
+  "screens": [
+    {
+      "id": "screen-clock",
+      "title": "Clock",
+      "type": "clock",
+      "enabled": true,
+      "schedule": {
+        "type": "always"
+      }
+    },
+    {
+      "id": "screen-weather-full",
+      "title": "Weather",
+      "type": "fullscreen-weather",
+      "enabled": true,
+      "schedule": {
+        "type": "always"
+      }
+    },
+    {
+      "id": "screen-f1-standings",
+      "title": "Formula 1",
+      "type": "fullscreen-f1",
+      "enabled": true,
+      "schedule": {
+        "type": "always"
+      }
+    },
+    {
+      "id": "screen-news-full",
+      "title": "World News",
+      "type": "fullscreen-news",
+      "enabled": true,
+      "schedule": {
+        "type": "always"
+      }
+    }
+  ]
+}
