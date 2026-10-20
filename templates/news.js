@@ -17,13 +17,37 @@ function renderNews(newsItems) {
       display: flex;
       flex-direction: column;
     ">
-      <div style="margin-bottom: 18px; display: flex; justify-content: space-between; align-items: baseline;">
+      <div style="margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center;">
         <h1 style="font-family: var(--font-main); font-size: 28px; font-weight: 700; color: var(--color-ink); letter-spacing: -0.5px;">
           Headlines
         </h1>
-        <span id="page-indicator" style="font-family: var(--font-main); font-size: 15px; font-weight: 500; color: var(--color-subtext);">
-          Page 1 of 1
-        </span>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button id="btn-prev" style="
+            font-family: var(--font-main);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-ink);
+            background: #ffffff;
+            border: 1px solid var(--color-bar-border);
+            border-radius: 6px;
+            padding: 4px 10px;
+            cursor: pointer;
+          ">&laquo; Prev</button>
+          <span id="page-indicator" style="font-family: var(--font-main); font-size: 14px; font-weight: 500; color: var(--color-subtext);">
+            1 of 1
+          </span>
+          <button id="btn-next" style="
+            font-family: var(--font-main);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-ink);
+            background: #ffffff;
+            border: 1px solid var(--color-bar-border);
+            border-radius: 6px;
+            padding: 4px 10px;
+            cursor: pointer;
+          ">Next &raquo;</button>
+        </div>
       </div>
 
       <div id="news-container" style="
@@ -124,40 +148,11 @@ function renderNews(newsItems) {
     </script>
   `;
 
-  // Pagination buttons seamlessly housed in the common bottom bar
-  const paginationControls = `
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <button id="btn-prev" style="
-        font-family: var(--font-main);
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--color-bar-text);
-        background: transparent;
-        border: 1px solid var(--color-bar-border);
-        border-radius: 8px;
-        padding: 6px 12px;
-        cursor: pointer;
-      ">&laquo; Prev</button>
-      <button id="btn-next" style="
-        font-family: var(--font-main);
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--color-bar-text);
-        background: transparent;
-        border: 1px solid var(--color-bar-border);
-        border-radius: 8px;
-        padding: 6px 12px;
-        cursor: pointer;
-      ">Next &raquo;</button>
-    </div>
-  `;
-
   return renderAppShell({
     title: 'KindleDash // News',
     bodyContent,
     currentAppName: 'News',
-    backUrl: '/',
-    rightSlotHtml: paginationControls
+    backUrl: '/'
   });
 }
 

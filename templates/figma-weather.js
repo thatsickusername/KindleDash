@@ -204,10 +204,10 @@ function renderFigmaWeather(data) {
   `;
 
   return renderFigmaShell({
-    title: `KindleDash // Weather ${data.location}`,
+    title: 'KindleDash // Weather',
     headExtras,
     bodyContent,
-    currentAppName: `Weather ${data.location || 'Delhi'}`,
+    currentAppName: 'Weather',
     backUrl: '/'
   });
 }

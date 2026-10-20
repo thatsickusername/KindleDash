@@ -57,55 +57,103 @@ html, body {
 }
 
 /* Common Bottom Bar (Frame 2 from Figma) */
-/* Exactly: 600px width, 85px height, inner pill: 570px x 73px, radius 12px, border 1px #a8a8a8, bg #d9d9d9 */
+/* Slim & Minimalist Common Bottom Bar with extra bottom clearance */
 .common-bottom-bar-wrapper {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 600px;
-  height: 85px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: transparent;
   z-index: 100;
+  padding-bottom: 12px;
+  box-sizing: border-box;
 }
 
 .common-bottom-bar {
   width: 570px;
-  height: 73px;
+  height: 44px;
   background-color: var(--color-bar-bg);
   border: 1px solid var(--color-bar-border);
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 25px;
+  padding: 0 16px;
   box-sizing: border-box;
 }
 
 .common-bottom-bar .bar-btn-back {
   font-family: var(--font-main);
-  font-size: 20px;
-  font-weight: 500;
-  line-height: 25.5px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
   color: var(--color-bar-text);
   text-decoration: none;
   display: flex;
   align-items: center;
   cursor: pointer;
-  padding: 10px 14px;
-  margin-left: -14px;
-  border-radius: 8px;
+  padding: 6px 8px;
+  margin-left: -6px;
+  border-radius: 6px;
 }
 
 .common-bottom-bar .bar-title {
   font-family: var(--font-main);
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
-  line-height: 25.5px;
+  line-height: 20px;
   color: var(--color-bar-text);
   letter-spacing: 0px;
+}
+
+/* Minimalist Battery Indicator */
+.bar-battery {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+}
+
+.bar-battery-pill {
+  width: 24px;
+  height: 12px;
+  border: 1.5px solid var(--color-bar-text);
+  border-radius: 2.5px;
+  padding: 1px;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+.bar-battery-pill::after {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: 2.5px;
+  width: 1.5px;
+  height: 4px;
+  background-color: var(--color-bar-text);
+  border-radius: 0 1px 1px 0;
+}
+
+.bar-battery-fill {
+  height: 100%;
+  width: 80%;
+  background-color: var(--color-bar-text);
+  border-radius: 1px;
+}
+
+.bar-battery-text {
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-bar-text);
+  letter-spacing: -0.2px;
 }
 
 /* Tactile Active feedback for Kindle Touch */
