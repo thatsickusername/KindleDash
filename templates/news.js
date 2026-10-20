@@ -1,6 +1,6 @@
 const { renderAppShell } = require('./figma-layout');
 
-function renderNews(newsItems) {
+function getNewsBody(newsItems) {
   const serializedNews = JSON.stringify(newsItems);
 
   const bodyContent = `
@@ -148,6 +148,11 @@ function renderNews(newsItems) {
     </script>
   `;
 
+  return bodyContent;
+}
+
+function renderNews(newsItems) {
+  const bodyContent = getNewsBody(newsItems);
   return renderAppShell({
     title: 'KindleDash // News',
     bodyContent,
@@ -156,4 +161,4 @@ function renderNews(newsItems) {
   });
 }
 
-module.exports = { renderNews };
+module.exports = { renderNews, getNewsBody };

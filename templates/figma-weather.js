@@ -1,9 +1,7 @@
 const { renderFigmaShell } = require('./figma-layout');
 
-function renderFigmaWeather(data) {
-  const headExtras = `<meta http-equiv="refresh" content="900">`;
-
-  const bodyContent = `
+function getFigmaWeatherBody(data) {
+  return `
     <!-- Main Screen Content Flex Container (600px width x 705px height, leaving 85px for bottom bar) -->
     <main style="
       width: 600px;
@@ -203,6 +201,13 @@ function renderFigmaWeather(data) {
     </main>
   `;
 
+  return bodyContent;
+}
+
+function renderFigmaWeather(data) {
+  const headExtras = `<meta http-equiv="refresh" content="900">`;
+  const bodyContent = getFigmaWeatherBody(data);
+
   return renderFigmaShell({
     title: 'KindleDash // Weather',
     headExtras,
@@ -212,4 +217,4 @@ function renderFigmaWeather(data) {
   });
 }
 
-module.exports = { renderFigmaWeather };
+module.exports = { renderFigmaWeather, getFigmaWeatherBody };

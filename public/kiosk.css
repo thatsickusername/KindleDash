@@ -1,0 +1,241 @@
+/* KindleDash: Kiosk Carousel Layout */
+
+body.kiosk-body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-canvas, #ffffff);
+  color: var(--color-ink, #111111);
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Viewport for Cyclable Screens: Fills from top (0) to bottom bar top (800 - 68 = 732px) */
+.faces-viewport {
+  width: 600px;
+  height: 732px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+.watch-face-card {
+  display: none;
+  width: 600px;
+  height: 732px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+.watch-face-card.active {
+  display: block;
+}
+
+.face-fullscreen-wrap {
+  width: 600px;
+  height: 732px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ----------------- Face: Formula 1 (2-Row CSS Grid filling entire available height) ----------------- */
+.f1-screen-container {
+  width: 600px;
+  height: 732px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 24px 28px 16px 28px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  row-gap: 18px;
+  overflow: hidden;
+}
+
+/* Top Container: Race Card (Fills entire row 1) */
+.f1-race-card {
+  width: 100%;
+  height: 100%;
+  border: 2.5px solid var(--color-ink, #111111);
+  border-radius: 14px;
+  padding: 20px 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #ffffff;
+}
+
+.f1-tag-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.f1-badge {
+  background: var(--color-ink, #111111);
+  color: #ffffff;
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.f1-countdown {
+  font-family: var(--font-main);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-ink, #111111);
+  letter-spacing: 0.2px;
+}
+
+.f1-grand-prix-title {
+  font-family: var(--font-main);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  color: var(--color-ink, #111111);
+}
+
+.f1-circuit-info {
+  font-family: var(--font-main);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-subtext, #464c52);
+  line-height: 1.3;
+}
+
+.f1-sessions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.f1-session-pill {
+  border: 2px solid var(--color-ink, #111111);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.f1-session-pill.highlighted {
+  background: var(--color-ink, #111111);
+  color: #ffffff;
+}
+
+.f1-session-pill.highlighted .sess-name,
+.f1-session-pill.highlighted .sess-time {
+  color: #ffffff;
+}
+
+.f1-session-pill .sess-name {
+  font-family: var(--font-main);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.f1-session-pill .sess-time {
+  font-family: var(--font-main);
+  font-size: 16px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+/* Bottom Container: Driver Standings (Fills entire row 2) */
+.f1-standings-section {
+  width: 100%;
+  height: 100%;
+  border: 2.5px solid var(--color-ink, #111111);
+  border-radius: 14px;
+  padding: 18px 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #ffffff;
+}
+
+.f1-section-header {
+  font-family: var(--font-main);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  border-bottom: 2px solid var(--color-ink, #111111);
+  padding-bottom: 8px;
+  color: var(--color-ink, #111111);
+}
+
+.f1-standings-table {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex: 1;
+  padding-top: 4px;
+}
+
+.f1-driver-row {
+  display: grid;
+  grid-template-columns: 28px 52px 1fr 125px 75px;
+  align-items: center;
+  font-family: var(--font-main);
+  font-size: 16px;
+  border-bottom: 1px solid var(--color-bar-border, #a8a8a8);
+  padding: 6px 0;
+}
+
+.f1-driver-row:last-child {
+  border-bottom: none;
+}
+
+.f1-pos {
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--color-ink, #111111);
+}
+
+.f1-code {
+  font-weight: 800;
+  background: var(--color-bar-bg, #d9d9d9);
+  padding: 3px 6px;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-ink, #111111);
+}
+
+.f1-driver-name {
+  font-weight: 700;
+  padding-left: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-ink, #111111);
+}
+
+.f1-team {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-subtext, #464c52);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.f1-points {
+  font-weight: 800;
+  font-size: 16px;
+  text-align: right;
+  color: var(--color-ink, #111111);
+}
