@@ -93,7 +93,7 @@ async function handler(req, res) {
     switch (urlPath) {
       case '/':
       case '/index.html':
-        return res.end(renderLauncher());
+        return res.end(renderLauncher(Object.fromEntries(urlObj.searchParams)));
 
       case '/clock':
         return res.end(renderClock(Object.fromEntries(urlObj.searchParams)));

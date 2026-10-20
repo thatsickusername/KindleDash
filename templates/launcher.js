@@ -1,11 +1,32 @@
 const { renderAppShell } = require('./figma-layout');
 
-function renderLauncher() {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const timeStr = `${hours}:${minutes}`;
-  const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+function getLauncherTimeParts(date, timeZone = 'Asia/Kolkata') {
+  const timeFormatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+  const parts = timeFormatter.formatToParts(date);
+  const hours = parts.find(p => p.type === 'hour')?.value || '00';
+  const minutes = parts.find(p => p.type === 'minute')?.value || '00';
+
+  const dateFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric'
+  });
+  const dateStr = dateFormatter.format(date);
+
+  return { timeStr: `${hours}:${minutes}`, dateStr };
+}
+
+function renderLauncher(reqQuery = {}) {
+  const timeZone = reqQuery.tz || process.env.KINDLE_TIMEZONE || 'Asia/Kolkata';
+  const serverNow = new Date();
+  const serverEpoch = serverNow.getTime();
+  const { timeStr, dateStr } = getLauncherTimeParts(serverNow, timeZone);
 
   const bodyContent = `
     <!-- Top Meta Area (600x85px) -->
@@ -140,14 +161,88 @@ function renderLauncher() {
 
     <script>
       (function() {
-        setInterval(function() {
-          var d = new Date();
-          var h = String(d.getHours()).padStart(2, '0');
-          var m = String(d.getMinutes()).padStart(2, '0');
-          var date = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-          var el = document.getElementById('meta-time');
-          if (el) el.textContent = h + ':' + m + ' • ' + date;
-        }, 60000);
+        var targetTimeZone = "${timeZone}";
+        var serverInitEpoch = ${serverEpoch};
+        var clientInitEpoch = Date.now();
+        var clockOffset = serverInitEpoch - clientInitEpoch;
+
+        var el = document.getElementById('meta-time');
+        var timeFormatter = null;
+        var dateFormatter = null;
+
+        try {
+          timeFormatter = new Intl.DateTimeFormat('en-GB', {
+            timeZone: targetTimeZone,
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          });
+          dateFormatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: targetTimeZone,
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric'
+          });
+        } catch (e) {
+          timeFormatter = null;
+        }
+
+        function updateMetaTime() {
+          var nowEpoch = Date.now() + clockOffset;
+          var d = new Date(nowEpoch);
+          var h = '00';
+          var m = '00';
+          var dateStr = '';
+
+          if (timeFormatter) {
+            try {
+              var parts = timeFormatter.formatToParts(d);
+              for (var i = 0; i < parts.length; i++) {
+                if (parts[i].type === 'hour') h = parts[i].value;
+                if (parts[i].type === 'minute') m = parts[i].value;
+              }
+              dateStr = dateFormatter.format(d);
+            } catch (err) {
+              timeFormatter = null;
+            }
+          }
+
+          if (!timeFormatter) {
+            var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+            var ist = new Date(utc + (3600000 * 5.5));
+            h = String(ist.getHours()).padStart ? String(ist.getHours()).padStart(2, '0') : (ist.getHours() < 10 ? '0' + ist.getHours() : '' + ist.getHours());
+            m = String(ist.getMinutes()).padStart ? String(ist.getMinutes()).padStart(2, '0') : (ist.getMinutes() < 10 ? '0' + ist.getMinutes() : '' + ist.getMinutes());
+            var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            dateStr = days[ist.getDay()] + ', ' + months[ist.getMonth()] + ' ' + ist.getDate();
+          }
+
+          if (el) {
+            el.innerHTML = h + ':' + m + ' &bull; ' + dateStr;
+          }
+        }
+
+        function scheduleNext() {
+          var nowEpoch = Date.now() + clockOffset;
+          var curSec = new Date(nowEpoch).getSeconds();
+          var curMs = new Date(nowEpoch).getMilliseconds();
+          var delay = (60 - curSec) * 1000 - curMs;
+          if (delay <= 0) delay = 1000;
+
+          setTimeout(function() {
+            updateMetaTime();
+            setInterval(updateMetaTime, 60000);
+          }, delay);
+        }
+
+        document.addEventListener('visibilitychange', function() {
+          if (!document.hidden) {
+            updateMetaTime();
+          }
+        });
+
+        updateMetaTime();
+        scheduleNext();
       })();
     </script>
   `;
