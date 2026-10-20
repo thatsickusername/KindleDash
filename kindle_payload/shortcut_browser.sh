@@ -149,6 +149,14 @@ start_gui(){
 
 stop_gui
 
+## Enable 802.11 Wi-Fi Power Save to allow transceiver to enter DTIM sleep
+if which iwconfig >/dev/null 2>&1; then
+    iwconfig wlan0 power on 2>/dev/null
+fi
+if which lipc-set-prop >/dev/null 2>&1; then
+    lipc-set-prop com.lab126.wifid enablePowerSave 1 2>/dev/null
+fi
+
 ## Run the browser
 refresh_screen
 
@@ -156,11 +164,13 @@ export XDG_CONFIG_HOME="/mnt/us/system/browser/"
 export LD_LIBRARY_PATH="/usr/bin/chromium/lib:/usr/bin/chromium/usr/lib:/usr/lib/"
 
 nohup /usr/bin/chromium/bin/kindle_browser $FULLSCREEN_SITE --no-zygote --no-sandbox --single-process \
---skia-resource-cache-limit-mb=64 --disable-gpu --in-process-gpu --disable-gpu-sandbox \
+--skia-resource-cache-limit-mb=32 --disable-gpu --in-process-gpu --disable-gpu-sandbox \
 --disable-gpu-compositing --enable-dom-distiller --enable-distillability-service \
 --force-device-scale-factor=$BROWSERSCALING --js-flags=jitless --content-shell-hide-toolbar \
---content-shell-host-window-cord=0,215 --force-gpu-mem-available-mb=32 --enable-grayscale-mode \
+--content-shell-host-window-cord=0,215 --force-gpu-mem-available-mb=16 --enable-grayscale-mode \
 --enable-low-end-device-mode --enable-low-res-tiling --disable-site-isolation-trials \
+--disable-background-networking --disable-sync --disable-wake-on-wifi --disable-extensions \
+--disable-component-update --aggressive-cache-discard \
 --user-agent=$USERAGENT $EXTRACHROMEARGS &
 
 browser_pid=$!
@@ -169,45 +179,56 @@ unset LD_LIBRARY_PATH
 echo "Browser running. Waiting for process completion..."
 
 ## Dynamic Live Battery Telemetry Worker
-# Runs in background, reads power hardware every 120s, and pushes to server endpoint
+# Runs in background: syncs once every hour during day (07:00-23:00), sleeps during night (23:00-07:00)
 battery_sync_worker(){
     # Base server URL stripped of query or trailing slash
     BASE_URL=$(echo "$FULLSCREEN_SITE" | sed -e 's/?.*//' -e 's/\/$//')
     while true; do
-        BATT=""
-        CHG="0"
+        CURRENT_HR=$(date +%H 2>/dev/null || echo "12")
+        # Strip leading zeros for numeric comparison
+        HR=$((10#$CURRENT_HR))
 
-        # 1. Read battery percentage
-        if which lipc-get-prop >/dev/null 2>&1; then
-            BATT=$(lipc-get-prop com.lab126.powerd battLevel 2>/dev/null)
-            IS_CHG=$(lipc-get-prop com.lab126.powerd isCharging 2>/dev/null)
-            [ "$IS_CHG" = "Charging" ] || [ "$IS_CHG" = "1" ] && CHG="1"
-        fi
+        # Check if daytime (between 07:00 and 22:59)
+        if [ "$HR" -ge 7 ] && [ "$HR" -lt 23 ]; then
+            BATT=""
+            CHG="0"
 
-        # Fallback to sysfs if lipc is empty
-        if [ -z "$BATT" ]; then
-            for f in /sys/class/power_supply/*/capacity; do
-                if [ -f "$f" ]; then
-                    BATT=$(cat "$f" 2>/dev/null)
-                    break
-                fi
-            done
-        fi
-
-        # If valid battery reading obtained, push to /api/battery
-        if [ -n "$BATT" ]; then
-            if which curl >/dev/null 2>&1; then
-                curl -s -k -m 10 -X POST "${BASE_URL}/api/battery" \
-                     -H "Content-Type: application/json" \
-                     -d "{\"level\":$BATT,\"charging\":$CHG}" >/dev/null 2>&1
-            elif which wget >/dev/null 2>&1; then
-                wget -q -T 10 -O - --post-data="{\"level\":$BATT,\"charging\":$CHG}" \
-                     --header="Content-Type: application/json" \
-                     --no-check-certificate "${BASE_URL}/api/battery" >/dev/null 2>&1
+            # 1. Read battery percentage
+            if which lipc-get-prop >/dev/null 2>&1; then
+                BATT=$(lipc-get-prop com.lab126.powerd battLevel 2>/dev/null)
+                IS_CHG=$(lipc-get-prop com.lab126.powerd isCharging 2>/dev/null)
+                [ "$IS_CHG" = "Charging" ] || [ "$IS_CHG" = "1" ] && CHG="1"
             fi
-        fi
 
-        sleep 120
+            # Fallback to sysfs if lipc is empty
+            if [ -z "$BATT" ]; then
+                for f in /sys/class/power_supply/*/capacity; do
+                    if [ -f "$f" ]; then
+                        BATT=$(cat "$f" 2>/dev/null)
+                        break
+                    fi
+                done
+            fi
+
+            # If valid battery reading obtained, push to /api/battery
+            if [ -n "$BATT" ]; then
+                if which curl >/dev/null 2>&1; then
+                    curl -s -k -m 10 -X POST "${BASE_URL}/api/battery" \
+                         -H "Content-Type: application/json" \
+                         -d "{\"level\":$BATT,\"charging\":$CHG}" >/dev/null 2>&1
+                elif which wget >/dev/null 2>&1; then
+                    wget -q -T 10 -O - --post-data="{\"level\":$BATT,\"charging\":$CHG}" \
+                         --header="Content-Type: application/json" \
+                         --no-check-certificate "${BASE_URL}/api/battery" >/dev/null 2>&1
+                fi
+            fi
+
+            # Sleep for 1 hour during daytime
+            sleep 3600
+        else
+            # Sleeping hours: sleep quietly for 30 minutes without performing any network transactions
+            sleep 1800
+        fi
     done
 }
 

@@ -14,8 +14,8 @@
   window.addEventListener('resize', applyScaling);
   window.addEventListener('orientationchange', applyScaling);
 
-  // E-Ink Inversion Waveform Routine (350ms Pure Black -> 150ms Pure White -> Restore)
-  // Forces all microcapsules to flip and cancel residual electrostatic charge
+  // Hyper-optimized E-Ink Inversion Waveform Routine (Single 80ms pure black pulse)
+  // Forces microcapsules to flip and cancel residual electrostatic charge without multiple redraw passes
   window.triggerAntiGhosting = function (callback) {
     var overlay = document.getElementById('flash-overlay');
     if (!overlay) {
@@ -24,43 +24,16 @@
       document.body.appendChild(overlay);
     }
 
-    // Phase 1: Pure Black
     overlay.style.backgroundColor = '#000000';
     overlay.style.display = 'block';
 
     setTimeout(function () {
-      // Phase 2: Pure White
-      overlay.style.backgroundColor = '#ffffff';
-
-      setTimeout(function () {
-        // Complete cycle
-        overlay.style.display = 'none';
-        if (typeof callback === 'function') callback();
-      }, 150);
-    }, 350);
+      overlay.style.display = 'none';
+      if (typeof callback === 'function') callback();
+    }, 80);
   };
 
-  // Schedule anti-ghosting waveform every 15 minutes at :00, :15, :30, :45
-  function scheduleNextFlash() {
-    var now = new Date();
-    var curM = now.getMinutes();
-    var curS = now.getSeconds();
-    var curMs = now.getMilliseconds();
-
-    var nextQuarter = (Math.floor(curM / 15) + 1) * 15;
-    var minutesToWait = nextQuarter - curM;
-    var msToWait = (minutesToWait * 60 - curS) * 1000 - curMs;
-
-    if (msToWait <= 0) msToWait = 15 * 60 * 1000;
-
-    setTimeout(function () {
-      window.triggerAntiGhosting();
-      // Continue periodically every 15 minutes
-      setInterval(function () {
-        window.triggerAntiGhosting();
-      }, 15 * 60 * 1000);
-    }, msToWait);
-  }
-
-  scheduleNextFlash();
+  // NOTE: Periodic 15-minute background flash schedule has been deliberately removed
+  // to avoid waking the CPU and rasterizer while displaying static E-Ink content.
+  // Anti-ghosting inversion is triggered strictly on-demand (e.g. user tap/carousel switch).
 })();

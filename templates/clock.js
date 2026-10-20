@@ -320,7 +320,21 @@ function renderClockTickerScript(timeZone, serverEpoch) {
           timeFormatter = null;
         }
 
+        // Returns true if clock is currently in view and active
+        function isClockActive() {
+          if (document.hidden) return false;
+          // In kiosk carousel, check if the card is active
+          var card = hEl ? hEl.closest('.watch-face-card') : null;
+          if (card && !card.classList.contains('active')) {
+            return false;
+          }
+          return true;
+        }
+
         function updateTime() {
+          // If clock is not currently active, skip DOM mutation to save CPU cycles
+          if (!isClockActive()) return;
+
           var nowEpoch = Date.now() + clockOffset;
           var d = new Date(nowEpoch);
 
@@ -358,6 +372,12 @@ function renderClockTickerScript(timeZone, serverEpoch) {
           if (mEl && mEl.textContent !== m) mEl.textContent = m;
           if (dayEl && dayEl.textContent !== dayName) dayEl.textContent = dayName;
           if (dateEl && dateEl.textContent !== fullDate) dateEl.textContent = fullDate;
+
+          // Check if bedtime arrived (23:00) to transition into full-screen night mode
+          var currentHour = parseInt(h, 10);
+          if (currentHour >= 23 || currentHour < 7) {
+            window.location.reload();
+          }
         }
 
         function scheduleNext() {
@@ -372,15 +392,24 @@ function renderClockTickerScript(timeZone, serverEpoch) {
             setInterval(updateTime, 60000);
           }, delay);
         }
+        scheduleNext();
 
+        // Immediate resync when switching back to clock or unhiding document
         document.addEventListener('visibilitychange', function() {
           if (!document.hidden) {
             updateTime();
           }
         });
 
+        // Watch for carousel screen changes in kiosk mode
+        document.addEventListener('click', function() {
+          setTimeout(updateTime, 120);
+        });
+        document.addEventListener('touchend', function() {
+          setTimeout(updateTime, 120);
+        });
+
         updateTime();
-        scheduleNext();
       })();
     </script>
   `;
