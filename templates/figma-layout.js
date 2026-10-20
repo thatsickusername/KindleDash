@@ -31,7 +31,7 @@ function renderAppShell({
         
         <!-- Center: Minimal Battery Indicator Container -->
         <div id="bar-battery-wrap" class="bar-battery" style="display: none;">
-          <div class="bar-battery-pill">
+          <div class="bar-battery-pill" style="margin-right: 12px;">
             <div id="bar-battery-fill" class="bar-battery-fill"></div>
           </div>
           <span id="bar-battery-text" class="bar-battery-text">--%</span>

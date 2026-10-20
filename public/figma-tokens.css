@@ -114,7 +114,6 @@ html, body {
 .bar-battery {
   display: flex;
   align-items: center;
-  gap: 9px;
   user-select: none;
 }
 
@@ -128,14 +127,16 @@ html, body {
   box-sizing: border-box;
   display: flex;
   align-items: center;
+  /* Kindle WebKit margin spacing because flex gap is ignored */
+  margin-right: 12px;
 }
 
 .bar-battery-pill::after {
   content: '';
   position: absolute;
-  right: -4px;
+  right: -5px;
   top: 3px;
-  width: 2px;
+  width: 3px;
   height: 5px;
   background-color: var(--color-bar-text);
   border-radius: 0 1.5px 1.5px 0;
@@ -153,7 +154,8 @@ html, body {
   font-size: 16px;
   font-weight: 700;
   color: var(--color-bar-text);
-  letter-spacing: 0px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 /* Tactile Active feedback for Kindle Touch */
