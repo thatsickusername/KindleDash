@@ -279,7 +279,8 @@ async function handler(req, res) {
           weatherData,
           f1Data,
           newsItems,
-          timeData
+          timeData,
+          timeZone: config.general?.timezone || process.env.KINDLE_TIMEZONE || 'Asia/Kolkata'
         }
       }));
     }

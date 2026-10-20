@@ -19,7 +19,23 @@ function renderFace(screen, data) {
   }
 }
 
-function renderNightSleepScreen() {
+function getTargetHour(timeZone = 'Asia/Kolkata') {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hour: 'numeric',
+      hour12: false
+    });
+    return parseInt(formatter.format(new Date()), 10);
+  } catch (e) {
+    const d = new Date();
+    const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+    const target = new Date(utc + (3600000 * 5.5)); // Fallback IST (+5.5)
+    return target.getHours();
+  }
+}
+
+function renderNightSleepScreen(timeZone = 'Asia/Kolkata') {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,7 +65,7 @@ function renderNightSleepScreen() {
         <!-- Bolder Crescent Moon -->
         <path d="M48 14C29 21 19 42 25 61C31 79 51 90 71 84C57 91 37 86 26 74C13 61 13 39 26 26C33 19 40 15 48 14Z" fill="#ffffff" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/>
         <!-- Star 1 (Bolder Top Right) -->
-        <path d="M73 17L76 25L84 27.5L76 30L73 38L70 30L62 27.5L70 25L73 17Z" fill="#ffffff"/>
+        <path d="M72 18L75 25L82 27.5L75 30L72 37L69 30L62 27.5L69 25L72 18Z" fill="#ffffff"/>
         <!-- Star 2 (Bolder Middle Right) -->
         <path d="M85 45L87 50L92 52L87 54L85 59L83 54L78 52L83 50L85 45Z" fill="#ffffff"/>
         <!-- Star 3 (Lower Center Glow Dot) -->
@@ -90,6 +106,8 @@ function renderNightSleepScreen() {
 
   <script>
     (function() {
+      var targetTz = "${timeZone}";
+
       // Carousel interaction completely locked during night mode
       document.addEventListener('click', function(e) {
         e.preventDefault();
@@ -100,9 +118,21 @@ function renderNightSleepScreen() {
         e.preventDefault();
       }, { passive: false });
 
+      function getCurrentHour() {
+        try {
+          var f = new Intl.DateTimeFormat('en-US', { timeZone: targetTz, hour: 'numeric', hour12: false });
+          return parseInt(f.format(new Date()), 10);
+        } catch(e) {
+          var d = new Date();
+          var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+          var ist = new Date(utc + (3600000 * 5.5));
+          return ist.getHours();
+        }
+      }
+
       // Check once an hour if morning has arrived (07:00) to reload full daytime kiosk
       setInterval(function() {
-        var hr = new Date().getHours();
+        var hr = getCurrentHour();
         if (hr >= 7 && hr < 23) {
           window.location.reload();
         }
@@ -114,10 +144,12 @@ function renderNightSleepScreen() {
 }
 
 function renderSmartwatchKiosk({ activeScreens, defaultFocusIndex, data }) {
-  // Check if night mode is currently active (23:00 to 07:00)
-  const currentHour = new Date().getHours();
+  const timeZone = data?.timeZone || process.env.KINDLE_TIMEZONE || 'Asia/Kolkata';
+
+  // Check if night mode is currently active (23:00 to 07:00 in configured timezone)
+  const currentHour = getTargetHour(timeZone);
   if (currentHour >= 23 || currentHour < 7) {
-    return renderNightSleepScreen();
+    return renderNightSleepScreen(timeZone);
   }
   const screensJson = JSON.stringify(activeScreens.map(s => ({
     id: s.id,
