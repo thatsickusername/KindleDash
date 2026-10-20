@@ -14,7 +14,8 @@
   window.addEventListener('resize', applyScaling);
   window.addEventListener('orientationchange', applyScaling);
 
-  // Anti-Ghosting Inversion Routine (400ms pure black flash)
+  // E-Ink Inversion Waveform Routine (350ms Pure Black -> 150ms Pure White -> Restore)
+  // Forces all microcapsules to flip and cancel residual electrostatic charge
   window.triggerAntiGhosting = function (callback) {
     var overlay = document.getElementById('flash-overlay');
     if (!overlay) {
@@ -22,15 +23,44 @@
       overlay.id = 'flash-overlay';
       document.body.appendChild(overlay);
     }
+
+    // Phase 1: Pure Black
+    overlay.style.backgroundColor = '#000000';
     overlay.style.display = 'block';
+
     setTimeout(function () {
-      overlay.style.display = 'none';
-      if (typeof callback === 'function') callback();
-    }, 400);
+      // Phase 2: Pure White
+      overlay.style.backgroundColor = '#ffffff';
+
+      setTimeout(function () {
+        // Complete cycle
+        overlay.style.display = 'none';
+        if (typeof callback === 'function') callback();
+      }, 150);
+    }, 350);
   };
 
-  // Auto de-ghosting every 30 minutes
-  setInterval(function () {
-    window.triggerAntiGhosting();
-  }, 1800000);
+  // Schedule anti-ghosting waveform every 15 minutes at :00, :15, :30, :45
+  function scheduleNextFlash() {
+    var now = new Date();
+    var curM = now.getMinutes();
+    var curS = now.getSeconds();
+    var curMs = now.getMilliseconds();
+
+    var nextQuarter = (Math.floor(curM / 15) + 1) * 15;
+    var minutesToWait = nextQuarter - curM;
+    var msToWait = (minutesToWait * 60 - curS) * 1000 - curMs;
+
+    if (msToWait <= 0) msToWait = 15 * 60 * 1000;
+
+    setTimeout(function () {
+      window.triggerAntiGhosting();
+      // Continue periodically every 15 minutes
+      setInterval(function () {
+        window.triggerAntiGhosting();
+      }, 15 * 60 * 1000);
+    }, msToWait);
+  }
+
+  scheduleNextFlash();
 })();

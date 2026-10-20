@@ -1,11 +1,38 @@
 const { renderAppShell } = require('./figma-layout');
 
-function renderClock() {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const dayName = now.toLocaleDateString('en-US', { weekday: 'long' });
-  const fullDate = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+function getTimeParts(date, timeZone = 'Asia/Kolkata') {
+  const timeFormatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+  const parts = timeFormatter.formatToParts(date);
+  const hours = parts.find(p => p.type === 'hour')?.value || '00';
+  const minutes = parts.find(p => p.type === 'minute')?.value || '00';
+
+  const dayFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    weekday: 'long'
+  });
+  const dayName = dayFormatter.format(date);
+
+  const dateFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+  const fullDate = dateFormatter.format(date);
+
+  return { hours, minutes, dayName, fullDate };
+}
+
+function renderClock(reqQuery = {}) {
+  const timeZone = reqQuery.tz || process.env.KINDLE_TIMEZONE || 'Asia/Kolkata';
+  const serverNow = new Date();
+  const serverEpoch = serverNow.getTime();
+  const { hours, minutes, dayName, fullDate } = getTimeParts(serverNow, timeZone);
 
   const bodyContent = `
     <!-- Top Content Area (600x700px) -->
@@ -91,17 +118,79 @@ function renderClock() {
 
     <script>
       (function() {
-        function updateTime() {
-          var d = new Date();
-          var h = String(d.getHours()).padStart(2, '0');
-          var m = String(d.getMinutes()).padStart(2, '0');
-          var dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
-          var fullDate = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        var targetTimeZone = "${timeZone}";
+        // Authoritative server timestamp when this HTML was generated
+        var serverInitEpoch = ${serverEpoch};
+        var clientInitEpoch = Date.now();
+        // Offset between server time and local device clock
+        var clockOffset = serverInitEpoch - clientInitEpoch;
 
-          var hEl = document.getElementById('clock-hours');
-          var mEl = document.getElementById('clock-minutes');
-          var dayEl = document.getElementById('clock-day');
-          var dateEl = document.getElementById('clock-date');
+        var hEl = document.getElementById('clock-hours');
+        var mEl = document.getElementById('clock-minutes');
+        var dayEl = document.getElementById('clock-day');
+        var dateEl = document.getElementById('clock-date');
+
+        var timeFormatter = null;
+        var dayFormatter = null;
+        var dateFormatter = null;
+
+        try {
+          timeFormatter = new Intl.DateTimeFormat('en-GB', {
+            timeZone: targetTimeZone,
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          });
+          dayFormatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: targetTimeZone,
+            weekday: 'long'
+          });
+          dateFormatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: targetTimeZone,
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+          });
+        } catch (e) {
+          // Fallback if older engine doesn't support targetTimeZone in Intl
+          timeFormatter = null;
+        }
+
+        function updateTime() {
+          // Current corrected timestamp
+          var nowEpoch = Date.now() + clockOffset;
+          var d = new Date(nowEpoch);
+
+          var h = '00';
+          var m = '00';
+          var dayName = '';
+          var fullDate = '';
+
+          if (timeFormatter) {
+            try {
+              var parts = timeFormatter.formatToParts(d);
+              for (var i = 0; i < parts.length; i++) {
+                if (parts[i].type === 'hour') h = parts[i].value;
+                if (parts[i].type === 'minute') m = parts[i].value;
+              }
+              dayName = dayFormatter.format(d);
+              fullDate = dateFormatter.format(d);
+            } catch (err) {
+              timeFormatter = null; // trigger fallback below
+            }
+          }
+
+          if (!timeFormatter) {
+            // Standard fallback using UTC offset for IST (+5:30 = 330 mins)
+            var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+            var ist = new Date(utc + (3600000 * 5.5));
+            h = String(ist.getHours()).padStart ? String(ist.getHours()).padStart(2, '0') : (ist.getHours() < 10 ? '0' + ist.getHours() : '' + ist.getHours());
+            m = String(ist.getMinutes()).padStart ? String(ist.getMinutes()).padStart(2, '0') : (ist.getMinutes() < 10 ? '0' + ist.getMinutes() : '' + ist.getMinutes());
+            var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            dayName = days[ist.getDay()];
+            fullDate = months[ist.getMonth()] + ' ' + ist.getDate() + ', ' + ist.getFullYear();
+          }
 
           if (hEl && hEl.textContent !== h) hEl.textContent = h;
           if (mEl && mEl.textContent !== m) mEl.textContent = m;
@@ -109,17 +198,30 @@ function renderClock() {
           if (dateEl && dateEl.textContent !== fullDate) dateEl.textContent = fullDate;
         }
 
-        // Ticker syncing cleanly to the next minute mark
+        // Ticker synced to the start of each minute
         function scheduleNext() {
-          var now = new Date();
-          var delay = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+          var nowEpoch = Date.now() + clockOffset;
+          var curSec = new Date(nowEpoch).getSeconds();
+          var curMs = new Date(nowEpoch).getMilliseconds();
+          var delay = (60 - curSec) * 1000 - curMs;
           if (delay <= 0) delay = 1000;
+
           setTimeout(function() {
             updateTime();
+            // Regularly update every minute
             setInterval(updateTime, 60000);
           }, delay);
         }
 
+        // Also refresh immediately on page visibility change / wake
+        document.addEventListener('visibilitychange', function() {
+          if (!document.hidden) {
+            updateTime();
+          }
+        });
+
+        // Run once on load to ensure sync
+        updateTime();
         scheduleNext();
       })();
     </script>

@@ -96,7 +96,7 @@ async function handler(req, res) {
         return res.end(renderLauncher());
 
       case '/clock':
-        return res.end(renderClock());
+        return res.end(renderClock(Object.fromEntries(urlObj.searchParams)));
 
       case '/weather': {
         const weatherData = await getFigmaWeatherData();
