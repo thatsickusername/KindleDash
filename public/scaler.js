@@ -33,4 +33,29 @@
   setInterval(function () {
     window.triggerAntiGhosting();
   }, 1800000);
+
+  // Soft exit trigger function
+  window.triggerKindleExit = function () {
+    // 1. Standard Chromium window.close()
+    try {
+      window.close();
+    } catch (e) {}
+
+    // 2. Trigger file download to /tmp or browser directory
+    try {
+      var a = document.createElement('a');
+      a.href = 'data:text/plain;charset=utf-8,exit';
+      a.download = 'kindledash_exit';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (e) {}
+
+    // 3. Visual feedback
+    var overlay = document.getElementById('flash-overlay');
+    if (overlay) {
+      overlay.style.display = 'block';
+      overlay.innerHTML = '<div style="color:white; font-family:sans-serif; font-size:24px; text-align:center; margin-top:40vh;">Exiting to Kindle Home...</div>';
+    }
+  };
 })();
