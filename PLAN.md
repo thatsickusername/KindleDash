@@ -28,6 +28,7 @@
 - Read `/dev/input/event1` for physical power button press.
 - Periodically check for software exit trigger (e.g., `/tmp/kindledash_exit` or `/mnt/us/system/browser/exit_flag`).
 - Periodic E-Ink waveform refresh via `eips` to prevent charge retention.
+- **Dynamic Battery State Syncer**: Lightweight background loop polling Kindle hardware power daemon (`lipc-get-prop com.lab126.powerd battLevel` and `isCharging`) every 120s, sending a tiny HTTPS POST request to `/api/battery` to keep dashboard status fresh without local HTTP servers, CORS, or mixed-content hurdles.
 
 ### 2.4 Graceful Exit & Restoration Routine
 - Trap signals (`EXIT`, `INT`, `TERM`, `HUP`).
@@ -49,3 +50,30 @@ All Kindle-bound scripts and assets will reside cleanly inside `kindle_payload/`
 - `kindle_payload/shortcut_example.sh`
 - `kindle_payload/shortcutbrowser/` (binaries, overlay, assets)
 - `kindle_payload/shortcut_browser.sh.sdr/`
+
+---
+
+## 4. Live Battery Telemetry Architecture & Implementation Plan
+
+### 4.1 System Overview
+- **Zero Heavy Runtimes on Device**: No Python or Node.js running on the Kindle.
+- **Micro Push Daemon**: Background subshell running on Kindle alongside `kindle_browser`. Wakes once every 120s, reads `lipc` or kernel `sysfs`, and makes a tiny curl POST to `/api/battery`.
+- **In-Memory Battery Cache on Server**: Server endpoint `/api/battery`:
+  - `POST /api/battery`: Stores `{ level: number, charging: boolean, updatedAt: timestamp }`.
+  - `GET /api/battery`: Returns latest battery JSON state.
+- **Frontend Live Poller & Cache**:
+  - `templates/figma-layout.js` sets a 60s periodic fetch to `/api/battery`.
+  - Automatically updates the bottom-bar battery pill (`bar-battery-wrap`, `bar-battery-fill`, `bar-battery-text`).
+  - Persists latest known battery status in `localStorage`/`sessionStorage` so navigating between Clock, Weather, News, and Launcher immediately displays the level without blanking.
+- **Process Lifecycle Cleanup**: The background sync loop PID is tracked in `shortcut_browser.sh` and terminated during `cleanup()` upon browser exit.
+
+---
+
+## 5. Acceptance Criteria
+1. **Dynamic Battery Endpoint**: `/api/battery` accepts `POST` updates and returns current `GET` data with CORS and `Content-Type: application/json`.
+2. **Persistence Across Page Navigations**: Switching between Clock, Weather, News, and Launcher maintains the battery reading without resetting to `--%` or hiding the element.
+3. **No Mixed Content Warnings / Errors**: Communication uses standard HTTPS (`/api/battery`), completely eliminating Chromium mixed-content blocks.
+4. **Low Resource Footprint on Kindle**:
+   - Background loop sleeps for 120s between wakeups.
+   - CPU usage is < 0.1%, with zero memory accumulation over 24/7 runtimes.
+5. **Clean Exit**: Terminating the browser script (`shortcut_stop.sh` or EXIT trap) kills the battery loop PID and leaves zero zombie processes.

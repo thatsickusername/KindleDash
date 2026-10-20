@@ -62,18 +62,58 @@ function renderAppShell({
         wrap.style.display = 'flex';
       }
 
-      // Check URL query param first (?batt=85&charging=1)
+      // 1. Immediately restore cached battery state from storage if available
+      try {
+        var cachedLevel = localStorage.getItem('kindle_batt_level');
+        var cachedCharging = localStorage.getItem('kindle_batt_charging') === 'true';
+        if (cachedLevel !== null && cachedLevel !== '') {
+          var parsedLevel = parseInt(cachedLevel, 10);
+          if (!isNaN(parsedLevel)) {
+            updateBatteryDisplay(parsedLevel, cachedCharging);
+          }
+        }
+      } catch (e) {}
+
+      // 2. Check URL query params (?batt=85&charging=1)
       var params = new URLSearchParams(window.location.search);
       if (params.has('batt')) {
         var b = parseInt(params.get('batt'), 10);
-        var chg = params.get('charging') === '1' || params.get('charging') === 'true';
+        var chg = params.get('charging') === '1' || params.get('charging') === 'true' || params.get('charging') === 'Charging';
         if (!isNaN(b)) {
           updateBatteryDisplay(b, chg);
-          return;
+          try {
+            localStorage.setItem('kindle_batt_level', b);
+            localStorage.setItem('kindle_batt_charging', chg ? 'true' : 'false');
+          } catch (e) {}
         }
       }
 
-      // Check HTML5 standard Battery API if supported by Kindle Chromium
+      // 3. Dynamic Live Telemetry Poller (/api/battery)
+      function syncServerBattery() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/battery', true);
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              if (data && typeof data.level === 'number') {
+                updateBatteryDisplay(data.level, !!data.charging);
+                try {
+                  localStorage.setItem('kindle_batt_level', data.level);
+                  localStorage.setItem('kindle_batt_charging', data.charging ? 'true' : 'false');
+                } catch (e) {}
+              }
+            } catch (err) {}
+          }
+        };
+        xhr.send();
+      }
+
+      // Fetch immediately and refresh every 60 seconds
+      syncServerBattery();
+      setInterval(syncServerBattery, 60000);
+
+      // 4. Fallback: Standard HTML5 Battery API if supported
       if (navigator.getBattery) {
         navigator.getBattery().then(function(battery) {
           updateBatteryDisplay(battery.level * 100, battery.charging);

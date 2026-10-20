@@ -27,6 +27,24 @@
 - [x] Wire `/tmp/kindledash_exit` file trigger detection in `shortcut_browser.sh` loop.
 - [ ] Add touch exit button on KindleDash UI (e.g., Home launcher / Action Bar).
 
-## Phase 6: Verification & USB Transfer Instructions
+## Phase 6: Dynamic Live Battery Telemetry
+- [x] **Backend Battery Endpoint (`api/index.js`)**:
+  - [x] Support `POST /api/battery` to record incoming `{ level, charging }` payload.
+  - [x] Support `GET /api/battery` returning latest battery status JSON.
+- [x] **Kindle Telemetry Pusher (`kindle_payload/shortcut_browser.sh`)**:
+  - [x] Extract hardware battery stats via `lipc-get-prop com.lab126.powerd battLevel` and fallback to `/sys/class/power_supply/*/capacity`.
+  - [x] Read charging state via `lipc-get-prop com.lab126.powerd isCharging`.
+  - [x] Spawn 120s background curl loop posting status to `${FULLSCREEN_SITE}api/battery`.
+  - [x] Track loop PID and terminate cleanly inside `cleanup()`.
+- [x] **Client UI Poller & Persistence (`templates/figma-layout.js`)**:
+  - [x] Fetch `/api/battery` on app shell load and at 60s intervals.
+  - [x] Save latest battery state to `sessionStorage`/`localStorage` for immediate paint on page transitions.
+  - [x] Ensure battery pill (`bar-battery-wrap`) correctly transitions from `display: none` to `display: flex` with accurate fill width and percentage/charging indicator.
+- [x] **Verification & Validation**:
+  - [x] Validate `/api/battery` locally with automated test requests.
+  - [x] Confirm no mixed-content or CORS issues on HTTPS.
+  - [x] Verify script syntax with bash check.
+
+## Phase 7: Verification & USB Transfer Instructions
 - [x] Cross-check shell scripts for POSIX/Bash syntax and execution permissions.
 - [x] Prepare exact transfer guide for copying `kindle_payload/` to Kindle `/mnt/us/documents/`.

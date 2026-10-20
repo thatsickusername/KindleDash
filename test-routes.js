@@ -1,6 +1,6 @@
 const http = require('http');
 
-const ROUTES = ['/', '/clock', '/weather', '/todo', '/news', '/style.css', '/scaler.js'];
+const ROUTES = ['/', '/clock', '/weather', '/todo', '/news', '/style.css', '/scaler.js', '/figma-tokens.css', '/api/battery'];
 
 async function testRoute(route) {
   return new Promise((resolve, reject) => {

@@ -168,10 +168,59 @@ browser_pid=$!
 unset LD_LIBRARY_PATH
 echo "Browser running. Waiting for process completion..."
 
+## Dynamic Live Battery Telemetry Worker
+# Runs in background, reads power hardware every 120s, and pushes to server endpoint
+battery_sync_worker(){
+    # Base server URL stripped of query or trailing slash
+    BASE_URL=$(echo "$FULLSCREEN_SITE" | sed -e 's/?.*//' -e 's/\/$//')
+    while true; do
+        BATT=""
+        CHG="0"
+
+        # 1. Read battery percentage
+        if which lipc-get-prop >/dev/null 2>&1; then
+            BATT=$(lipc-get-prop com.lab126.powerd battLevel 2>/dev/null)
+            IS_CHG=$(lipc-get-prop com.lab126.powerd isCharging 2>/dev/null)
+            [ "$IS_CHG" = "Charging" ] || [ "$IS_CHG" = "1" ] && CHG="1"
+        fi
+
+        # Fallback to sysfs if lipc is empty
+        if [ -z "$BATT" ]; then
+            for f in /sys/class/power_supply/*/capacity; do
+                if [ -f "$f" ]; then
+                    BATT=$(cat "$f" 2>/dev/null)
+                    break
+                fi
+            done
+        fi
+
+        # If valid battery reading obtained, push to /api/battery
+        if [ -n "$BATT" ]; then
+            if which curl >/dev/null 2>&1; then
+                curl -s -k -m 10 -X POST "${BASE_URL}/api/battery" \
+                     -H "Content-Type: application/json" \
+                     -d "{\"level\":$BATT,\"charging\":$CHG}" >/dev/null 2>&1
+            elif which wget >/dev/null 2>&1; then
+                wget -q -T 10 -O - --post-data="{\"level\":$BATT,\"charging\":$CHG}" \
+                     --header="Content-Type: application/json" \
+                     --no-check-certificate "${BASE_URL}/api/battery" >/dev/null 2>&1
+            fi
+        fi
+
+        sleep 120
+    done
+}
+
+battery_sync_worker &
+battery_pid=$!
+
 cleanup(){
     trap - EXIT INT TERM HUP
-    echo "Stopping browser cleanly..."
+    echo "Stopping browser and background workers cleanly..."
     restore_sleep
+    if [ -n "$battery_pid" ]; then
+        kill "$battery_pid" 2>/dev/null
+    fi
     if [ -n "$browser_pid" ]; then
         kill -TERM "$browser_pid" 2>/dev/null
         for i in 1 2 3 4; do
