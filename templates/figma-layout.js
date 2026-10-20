@@ -112,19 +112,6 @@ function renderAppShell({
       // Fetch immediately and refresh every 60 seconds
       syncServerBattery();
       setInterval(syncServerBattery, 60000);
-
-      // 4. Fallback: Standard HTML5 Battery API if supported
-      if (navigator.getBattery) {
-        navigator.getBattery().then(function(battery) {
-          updateBatteryDisplay(battery.level * 100, battery.charging);
-          battery.addEventListener('levelchange', function() {
-            updateBatteryDisplay(battery.level * 100, battery.charging);
-          });
-          battery.addEventListener('chargingchange', function() {
-            updateBatteryDisplay(battery.level * 100, battery.charging);
-          });
-        }).catch(function() {});
-      }
     })();
   </script>
 </body>
