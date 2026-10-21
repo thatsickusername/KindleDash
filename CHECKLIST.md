@@ -69,4 +69,4 @@ Execute the tasks below sequentially. Before marking a step complete (`[x]`), yo
 - [x] **End-to-End Test 1:** Visit `/admin`, set the view to "Weather" and refresh interval to 1800.
 - [x] **End-to-End Test 2:** Hit `/api/display` and confirm it outputs `refresh_rate: 1800`.
 - [x] **End-to-End Test 3:** Hit `/api/render-image` and visually confirm a Weather PNG is generated instead of a Clock.
-- [ ] **Handover:** Notify the user that the MVP is complete and ready for final deployment.
+- [x] **Handover:** Notify the user that the MVP is complete and ready for final deployment.
