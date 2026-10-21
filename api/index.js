@@ -18,7 +18,7 @@ const {
 let globalConfig = {
   carousel_enabled: false,           // boolean: cycle screens automatically on each wake
   active_view: 'clock',              // 'clock' | 'weather' | 'f1' | 'news'
-  refresh_interval: 900,             // 900 (15m), 1800 (30m), 3600 (1h), 7200 (2h)
+  refresh_interval: 300,             // 300 (5m), 900 (15m), 1800 (30m), 3600 (1h), 7200 (2h)
   night_mode_enabled: true,          // boolean
   night_start: '23:00',              // HH:MM string
   night_end: '07:00',                // HH:MM string
@@ -321,7 +321,7 @@ async function handler(req, res) {
           if (parsed.active_view && ['clock', 'weather', 'f1', 'news'].includes(parsed.active_view)) {
             globalConfig.active_view = parsed.active_view;
           }
-          if (parsed.refresh_interval && [900, 1800, 3600, 7200].includes(Number(parsed.refresh_interval))) {
+          if (parsed.refresh_interval && [300, 900, 1800, 3600, 7200].includes(Number(parsed.refresh_interval))) {
             globalConfig.refresh_interval = Number(parsed.refresh_interval);
           }
           if (typeof parsed.night_mode_enabled === 'boolean') {

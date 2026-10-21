@@ -1,13 +1,13 @@
 function renderAdminPortal(globalConfig, telemetry = {}) {
   const carouselEnabled = globalConfig.carousel_enabled === true;
   const activeView = globalConfig.active_view || 'clock';
-  const refreshInterval = globalConfig.refresh_interval || 900;
+  const refreshInterval = globalConfig.refresh_interval || 300;
   const nightModeEnabled = globalConfig.night_mode_enabled !== false;
   const nightStart = globalConfig.night_start || '23:00';
   const nightEnd = globalConfig.night_end || '07:00';
 
-  // Map interval to slider index: 900 -> 0, 1800 -> 1, 3600 -> 2, 7200 -> 3
-  const intervalMap = [900, 1800, 3600, 7200];
+  // Map interval to slider index: 300 -> 0, 900 -> 1, 1800 -> 2, 3600 -> 3, 7200 -> 4
+  const intervalMap = [300, 900, 1800, 3600, 7200];
   let sliderIndex = intervalMap.indexOf(refreshInterval);
   if (sliderIndex === -1) sliderIndex = 0;
 
@@ -177,15 +177,16 @@ function renderAdminPortal(globalConfig, telemetry = {}) {
           <div class="card">
             <div class="card-title">
               <span>Refresh Wake Interval</span>
-              <span class="current-interval-badge" id="interval-label">15 Minutes</span>
+              <span class="current-interval-badge" id="interval-label">5 Minutes</span>
             </div>
             <div class="slider-container">
-              <input type="range" class="step-slider" id="interval-slider" min="0" max="3" step="1" value="${sliderIndex}" oninput="updateIntervalUI(this.value)">
+              <input type="range" class="step-slider" id="interval-slider" min="0" max="4" step="1" value="${sliderIndex}" oninput="updateIntervalUI(this.value)">
               <div class="slider-labels">
-                <span id="lbl-0" class="${sliderIndex === 0 ? 'active' : ''}">15 min</span>
-                <span id="lbl-1" class="${sliderIndex === 1 ? 'active' : ''}">30 min</span>
-                <span id="lbl-2" class="${sliderIndex === 2 ? 'active' : ''}">1 hour</span>
-                <span id="lbl-3" class="${sliderIndex === 3 ? 'active' : ''}">2 hours</span>
+                <span id="lbl-0" class="${sliderIndex === 0 ? 'active' : ''}">5 min</span>
+                <span id="lbl-1" class="${sliderIndex === 1 ? 'active' : ''}">15 min</span>
+                <span id="lbl-2" class="${sliderIndex === 2 ? 'active' : ''}">30 min</span>
+                <span id="lbl-3" class="${sliderIndex === 3 ? 'active' : ''}">1 hour</span>
+                <span id="lbl-4" class="${sliderIndex === 4 ? 'active' : ''}">2 hours</span>
               </div>
             </div>
             <div class="notice">The Kindle stays in deep sleep (0 CPU / 0 Wi-Fi) between intervals, waking only to fetch and paint.</div>
@@ -268,13 +269,13 @@ function renderAdminPortal(globalConfig, telemetry = {}) {
   </div>
 
   <script>
-    const INTERVAL_SECONDS = [900, 1800, 3600, 7200];
-    const INTERVAL_NAMES = ['15 Minutes', '30 Minutes', '1 Hour', '2 Hours'];
+    const INTERVAL_SECONDS = [300, 900, 1800, 3600, 7200];
+    const INTERVAL_NAMES = ['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '2 Hours'];
 
     function updateIntervalUI(val) {
       const idx = parseInt(val, 10);
       document.getElementById('interval-label').innerText = INTERVAL_NAMES[idx];
-      for (let i = 0; i <= 3; i++) {
+      for (let i = 0; i <= 4; i++) {
         const el = document.getElementById('lbl-' + i);
         if (i === idx) el.classList.add('active');
         else el.classList.remove('active');

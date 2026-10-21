@@ -83,10 +83,7 @@ MAX_INTERVAL="${TRMNL_MAX_INTERVAL:-21600}"  # ignored and INTERVAL is used inst
 FULL_REFRESH_EVERY=4                 # flash the panel every Nth draw to clear ghosting
 FIRST_DRAW_DELAY="${TRMNL_FIRST_DRAW_DELAY:-3}"  # let KUAL finish repainting first
 WIFI_MAX_WAIT="${TRMNL_WIFI_MAX_WAIT:-60}"       # seconds to wait for Wi-Fi after resume
-WIFI_PROBE_WAIT="${TRMNL_WIFI_PROBE_WAIT:-10}"   # quick UNHELD first probe; a healthy
-                                                 # cycle associates in a few s, so it
-                                                 # passes here and never holds the radio
-                                                 # awake (keeps normal suspends untouched)
+WIFI_PROBE_WAIT="${TRMNL_WIFI_PROBE_WAIT:-30}"   # Broadcom BCM43438 needs ~15-25s after suspend to reload firmware and re-associate
 WIFI_RESET_TRIES="${TRMNL_WIFI_RESET_TRIES:-3}"  # hard radio resets before a cycle is failed
 FAIL_BACKOFF="${TRMNL_FAIL_BACKOFF:-60}"         # awake pause after a failed cycle
 REDRAW_EVERY="${TRMNL_REDRAW_EVERY:-30}"         # re-blit cadence during awake sleeps
@@ -650,7 +647,7 @@ wifi_reset() {
         wifid enable  >/dev/null 2>&1
     fi
     wifi_up
-    sleep 2
+    sleep 5
     return 0
 }
 
@@ -1574,9 +1571,8 @@ main_loop() {
         # fires once wait_for_wifi() RETURNS, so a probe that never returns -
         # exactly what happened at 13:27:00 on 2026-09-02 - had produced zero
         # server-side signal for a full day before the silence was noticed.
-        # This tag alone, arriving and then never being followed by a CYCLE
-        # line, is now the evidence a hung probe leaves behind.
-        push_log "wifi-probe-begin cycle=$n" 15
+        # Don't try to push logs over network before Wi-Fi is even probed/associated
+        # push_log "wifi-probe-begin cycle=$n" 15
         wifi_s=$(wait_for_wifi "$WIFI_PROBE_WAIT")
         wifi_ok=$?
         screensaver_release
