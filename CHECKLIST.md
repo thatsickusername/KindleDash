@@ -1,60 +1,72 @@
-# KindleDash 3.0: Implementation Checklist
+# Agent Execution Checklist: E-Ink SSR Dashboard (In-Memory MVP)
 
-## Phase 1: Carousel & Screen Setup
-- [x] Configure 4 core screens in carousel: Clock, Weather, Formula 1, World News.
-- [x] Set Formula 1 screen to `always` visible so it remains in rotation 24/7.
-- [x] Show upcoming race countdown, track, and timetable on dedicated F1 screen.
-- [x] Show Top 5 World Drivers Championship standings on dedicated F1 screen.
+**Agent Instructions:** 
+Execute the tasks below sequentially. Before marking a step complete (`[x]`), you MUST verify the "Acceptance Criteria" for that step. If a step fails the criteria, debug and fix it before moving to the next.
 
-## Phase 2: Dynamic Split Clock Screen
-- [x] Add conditional rendering in [`templates/clock.js`](file:///C:/Users/manis/Development/kindleDash/templates/clock.js):
-  - [x] **Standard Days**: Centered static clock with 170px hero numbers, divider, day, and date.
-  - [x] **Qualifying & Race Days**: Automatically splits into a balanced 2-row grid (`grid-template-rows: 1fr 1fr`):
-    - [x] Top Row: Clock & Date (`105px` numerals, day, full date).
-    - [x] Bottom Row: Grand Prix name, city/country, session tag (`⏱️ QUALIFYING` or `🏁 RACE DAY`), and top 5 standings table.
-  - [x] Minute-drift auto ticker preserved across both modes.
+---
 
-## Phase 3: Layout & Bottom Bar
-- [x] Dedicated F1 and Weather screens use full-height 2-container layout filling entire 712px height above bottom bar.
-- [x] Bottom bar displays active screen title on left (`Clock`, `Weather`, `Formula 1`, `World News`) and battery icon + percentage on right.
+## Phase 1: Dummy Integration & Handshake
 
-## Phase 4: Hyper-Optimization Battery Hardening
+- [x] **Step 1.1: Serve a Dummy Image**
+  - **Task:** Create or place a static PNG file named `test-dashboard.png` inside the `public` directory.
+  - **Constraints:** Image should be black-and-white (or grayscale) and match standard Kindle aspect ratios (e.g., 600x800).
+  - **Acceptance Criteria:** Visiting `http://localhost:<PORT>/test-dashboard.png` in a browser successfully displays the image.
 
-### 4.1 Client-Side Network Squelching (`templates/kiosk.js`)
-- [x] **Remove 60-second in-browser battery poller**:
-  - *Acceptance Criteria*: Eliminate `setInterval(syncServerBattery, 60000)` in `templates/kiosk.js`. Battery data is read on load via URL params (`?batt=...`) and localStorage. No recurrent client-side battery fetch requests exist.
-- [x] **Set `/api/active-screens` schedule poller to 1 hour with quiet hours**:
-  - *Acceptance Criteria*: Poller interval set to 1 hour (3,600,000ms). Between 23:00 and 07:00 local time, network requests are bypassed completely.
+- [x] **Step 1.2: Create the Kindle API Endpoint (`/api/display`)**
+  - **Task:** Create a new API route `GET /api/display`.
+  - **Task:** Make it return `{ "image_url": "https://<YOUR_VERCEL_DOMAIN>/test-dashboard.png", "refresh_rate": 900 }`.
+  - **Acceptance Criteria:** Hitting the `/api/display` endpoint returns valid JSON with the exact keys required.
 
-### 4.2 Active-Screen-Aware Clock Ticker & Dedicated Full-Screen Night Sleep Mode
-- [x] **Gate Minute Ticker to Active Screen Only**:
-  - *Acceptance Criteria*: In `templates/clock.js`, verify `updateTime()` checks if the parent card has `.active`. If the user is on Weather, F1, or News, DOM updates are skipped. When the user taps back to Clock, `updateTime()` fires immediately to ensure the exact minute displays instantly.
-- [x] **Dedicated Full-Screen Sleep Mode (23:00 to 07:00)**:
-  - *Acceptance Criteria*:
-    - Renders as a dedicated full-screen 600x800 display (no time digits, no date string, no bottom bar, no battery percentage).
-    - Features clean geometric crescent moon and stars artwork with soothing text (*"Good night. Sleep well."*).
-    - Screen carousel cycling (tap/click/swipe) is completely locked/disabled during night mode.
-    - Zero active timers running; static display with 0 CPU & 0 network consumption.
-    - Automatically reloads and restores full interactive daytime carousel at 07:00.
+- [ ] **Phase 1 PAUSE:**
+  - **Task:** Stop execution and notify the user to deploy to Vercel and test on the physical Kindle using the `Test Once` KUAL button.
+  - **Condition:** Do NOT proceed to Phase 2 until the user explicitly confirms the dummy image rendered on their Kindle.
 
-### 4.3 Anti-Ghosting Hardware & Waveform Optimization (`public/scaler.js`, `templates/kiosk.js`)
-- [x] **Eliminate 15-Minute Unconditional Flash Interval**:
-  - *Acceptance Criteria*: Remove the recurring `scheduleNextFlash` / `setInterval(window.triggerAntiGhosting, 15 * 60 * 1000)` in `public/scaler.js`.
-- [x] **Streamlined Tap-to-Switch Inversion**:
-  - *Acceptance Criteria*: Replace multi-phase flash (350ms black + 150ms white) with a single, crisp 80ms black pulse in `triggerEinkFlash()`. Only fires when the user actually taps/swipes to cycle cards.
+---
 
-### 4.4 Kindle Shell Script & Power Management (`kindle_payload/shortcut_browser.sh`)
-- [x] **Throttle Background Battery Sync Worker to 1 Hour**:
-  - *Acceptance Criteria*: In `shortcut_browser.sh`, modify `battery_sync_worker` from `sleep 120` to:
-    - 1 hour (3600s) during daytime (07:00 to 23:00).
-    - Sleep continuously with 0 network calls during night hours (23:00 to 07:00).
-- [x] **Chromium Low-Power Execution Flags**:
-  - *Acceptance Criteria*: Update the `kindle_browser` launch line to include:
-    - `--disable-background-networking`
-    - `--disable-sync`
-    - `--disable-wake-on-wifi`
-    - `--disable-extensions`
-    - `--disable-component-update`
-    - `--aggressive-cache-discard`
-- [x] **Wi-Fi Power Save Activation**:
-  - *Acceptance Criteria*: Add `iwconfig wlan0 power on 2>/dev/null` or `lipc-set-prop com.lab126.wifid enablePowerSave 1` before launching the browser so the wireless chip uses 802.11 power-saving sleep between transmissions.
+## Phase 2: Dynamic Image Pipeline & Admin Dashboard (In-Memory MVP)
+
+- [ ] **Step 2.1: Establish In-Memory State**
+  - **Task:** Create a global/shared variable (e.g., `globalConfig`) in the main server file to hold state: `{ active_view: 'clock', refresh_interval: 900 }`.
+  - **Constraints:** Must be accessible and mutable by both the `/admin` API routes and the image rendering routes.
+  - **Acceptance Criteria:** A quick `console.log(globalConfig)` inside any route correctly prints the default state.
+
+- [ ] **Step 2.2: Build the Admin Dashboard (`/admin` and `POST /api/config`)**
+  - **Task:** Create an HTML page served at `/admin` containing a `<form>`.
+  - **Task:** Form must include radio buttons for `active_view` (Clock, Weather) and a number input for `refresh_interval`.
+  - **Task:** Create `POST /api/config` to accept form data and update the `globalConfig` variable.
+  - **Acceptance Criteria:** Submitting the form on `/admin` successfully changes the `globalConfig` values on the backend (verify via console logs or a test GET endpoint).
+
+- [ ] **Step 2.3: Set Up the HTML-to-PNG Pipeline**
+  - **Task:** Run `npm install satori @resvg/resvg-js`.
+  - **Task:** Load a valid `.ttf` or `.otf` font file (e.g., Roboto or Bookerly) into a Buffer variable when the server starts.
+  - **Constraints:** Satori requires the font buffer to render text.
+  - **Acceptance Criteria:** The font buffer successfully loads into memory without throwing `ENOENT` (file not found) errors.
+
+- [ ] **Step 2.4: Migrate Views to Satori Templates**
+  - **Task:** Create JS functions that return layout objects for "Clock" and "Weather".
+  - **Constraints:** 
+    - You MUST use standard `display: flex` for all layouts. Satori does **not** support CSS Grid.
+    - All dimensions must be hardcoded to match the physical Kindle screen (e.g., `width: 600`, `height: 800`).
+    - Use strict `#000000` (black) and `#FFFFFF` (white) for colors.
+  - **Acceptance Criteria:** The functions successfully return React-element-like objects or valid HTML strings parseable by Satori.
+
+- [ ] **Step 2.5: Build the Dynamic Image Renderer (`GET /api/render-image`)**
+  - **Task:** Create the endpoint `GET /api/render-image`.
+  - **Task:** Logic pipeline: Read `globalConfig.active_view` -> Generate Layout -> Pass to Satori -> Pass to Resvg -> Output PNG buffer.
+  - **Constraints:** Response must have header `Content-Type: image/png`.
+  - **Acceptance Criteria:** Visiting `/api/render-image` in a desktop browser instantly downloads/displays a valid PNG image of the current `active_view`.
+
+- [ ] **Step 2.6: Wire the Final Display API (`GET /api/display`)**
+  - **Task:** Update the endpoint created in Step 1.2.
+  - **Task:** Change `image_url` to point to the new dynamic route: `https://<YOUR_VERCEL_DOMAIN>/api/render-image`.
+  - **Task:** Change `refresh_rate` to read dynamically from `globalConfig.refresh_interval`.
+  - **Acceptance Criteria:** Hitting `/api/display` returns valid JSON reflecting the current in-memory state.
+
+---
+
+## Final System Verification
+
+- [ ] **End-to-End Test 1:** Visit `/admin`, set the view to "Weather" and refresh interval to 1800.
+- [ ] **End-to-End Test 2:** Hit `/api/display` and confirm it outputs `refresh_rate: 1800`.
+- [ ] **End-to-End Test 3:** Hit `/api/render-image` and visually confirm a Weather PNG is generated instead of a Clock.
+- [ ] **Handover:** Notify the user that the MVP is complete and ready for final deployment.

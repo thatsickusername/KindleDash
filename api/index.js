@@ -91,6 +91,19 @@ async function handler(req, res) {
     }
   }
 
+  if (urlPath === '/test-dashboard.png') {
+    const imgPath = path.join(__dirname, '..', 'public', 'test-dashboard.png');
+    try {
+      const imgBuffer = fs.readFileSync(imgPath);
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Cache-Control', 'public, max-age=60');
+      return res.end(imgBuffer);
+    } catch (err) {
+      res.statusCode = 404;
+      return res.end('Test image not found');
+    }
+  }
+
   if (urlPath.startsWith('/figma-assets/')) {
     const assetPath = path.join(__dirname, '..', 'public', urlPath);
     try {
@@ -113,6 +126,25 @@ async function handler(req, res) {
   }
 
   // --- API Endpoints ---
+
+  // 0. /api/display (Kindle TRMNL/FBInk handshake endpoint)
+  if (urlPath === '/api/display') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+    const hostHeader = req.headers.host || 'localhost:3000';
+    const proto = req.headers['x-forwarded-proto'] || (hostHeader.startsWith('localhost') ? 'http' : 'https');
+    const baseUrl = `${proto}://${hostHeader}`;
+
+    const responsePayload = {
+      image_url: `${baseUrl}/test-dashboard.png`,
+      refresh_rate: 900
+    };
+
+    res.statusCode = 200;
+    return res.end(JSON.stringify(responsePayload, null, 2));
+  }
 
   // 1. /api/battery
   if (urlPath === '/api/battery') {
