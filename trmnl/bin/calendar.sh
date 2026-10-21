@@ -1768,7 +1768,13 @@ main_loop() {
         screensaver_release
         # And the radio must go down, or its wakelock refuses the suspend outright.
         wifi_down
-        sleep 3
+        sleep 2
+
+        # Re-blit the image AFTER turning off Wi-Fi so FBInk overwrites the native OS airplane icon
+        if [ -s "$OUT" ]; then
+            draw "$OUT" >/dev/null 2>&1
+        fi
+        sleep 1
 
         if ! arm_alarm "$iv"; then
             wifi_up
