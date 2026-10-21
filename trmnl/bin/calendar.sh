@@ -1147,6 +1147,10 @@ takeover_begin() {
     fi
     if command -v initctl >/dev/null 2>&1; then
         initctl stop webreader >/dev/null 2>&1
+        initctl stop pillow >/dev/null 2>&1
+    fi
+    if command -v lipc-set-prop >/dev/null 2>&1; then
+        lipc-set-prop com.lab126.pillow disableAppTitle 1 >/dev/null 2>&1
     fi
     if [ -w /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ]; then
         echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null
@@ -1256,6 +1260,10 @@ takeover_end() {
     fi
     if command -v initctl >/dev/null 2>&1; then
         initctl start webreader >/dev/null 2>&1
+        initctl start pillow >/dev/null 2>&1
+    fi
+    if command -v lipc-set-prop >/dev/null 2>&1; then
+        lipc-set-prop com.lab126.pillow disableAppTitle 0 >/dev/null 2>&1
     fi
     # Restart the GUI with whichever method takeover_begin recorded; if none was
     # recorded, try them all - restarting an already-running framework is harmless.
