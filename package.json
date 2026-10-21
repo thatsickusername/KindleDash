@@ -7,7 +7,10 @@
     "start": "node server.js",
     "dev": "node server.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "satori": "^0.63.2"
+  },
   "engines": {
     "node": ">=18.0.0"
   }
