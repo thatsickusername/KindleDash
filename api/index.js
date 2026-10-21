@@ -3,7 +3,8 @@ const path = require('path');
 const satori = require('satori');
 const { Resvg } = require('@resvg/resvg-js');
 
-const { getWeatherData } = require('../services/weather');
+const { getF1Data } = require('../services/f1');
+const { getFigmaWeatherData } = require('../services/weather-figma');
 const { generateClockLayout, generateWeatherLayout } = require('../services/satori-templates');
 
 // Monolithic In-Memory State for MVP
@@ -15,17 +16,19 @@ let globalConfig = {
 // Font Buffers for Satori (Loaded once into memory)
 const FONT_REGULAR_PATH = path.join(__dirname, '..', 'assets', 'fonts', 'Inter-Regular.ttf');
 const FONT_BOLD_PATH = path.join(__dirname, '..', 'assets', 'fonts', 'Inter-Bold.ttf');
+const FONT_GROTESK_LIGHT_PATH = path.join(__dirname, '..', 'assets', 'fonts', 'SpaceGrotesk-Light.ttf');
+const FONT_GROTESK_BOLD_PATH = path.join(__dirname, '..', 'assets', 'fonts', 'SpaceGrotesk-Bold.ttf');
 
 let fontRegularBuffer = null;
 let fontBoldBuffer = null;
+let fontGroteskLightBuffer = null;
+let fontGroteskBoldBuffer = null;
 
 try {
-  if (fs.existsSync(FONT_REGULAR_PATH)) {
-    fontRegularBuffer = fs.readFileSync(FONT_REGULAR_PATH);
-  }
-  if (fs.existsSync(FONT_BOLD_PATH)) {
-    fontBoldBuffer = fs.readFileSync(FONT_BOLD_PATH);
-  }
+  if (fs.existsSync(FONT_REGULAR_PATH)) fontRegularBuffer = fs.readFileSync(FONT_REGULAR_PATH);
+  if (fs.existsSync(FONT_BOLD_PATH)) fontBoldBuffer = fs.readFileSync(FONT_BOLD_PATH);
+  if (fs.existsSync(FONT_GROTESK_LIGHT_PATH)) fontGroteskLightBuffer = fs.readFileSync(FONT_GROTESK_LIGHT_PATH);
+  if (fs.existsSync(FONT_GROTESK_BOLD_PATH)) fontGroteskBoldBuffer = fs.readFileSync(FONT_GROTESK_BOLD_PATH);
   console.log('[KindleDash SSR] Fonts initialized successfully into memory.');
 } catch (err) {
   console.error('[KindleDash SSR] Warning: Failed to pre-load fonts:', err);
@@ -34,25 +37,21 @@ try {
 function getFontConfig() {
   const fonts = [];
   if (fontRegularBuffer) {
-    fonts.push({
-      name: 'Inter',
-      data: fontRegularBuffer,
-      weight: 400,
-      style: 'normal'
-    });
+    fonts.push({ name: 'Inter', data: fontRegularBuffer, weight: 400, style: 'normal' });
   }
   if (fontBoldBuffer) {
-    fonts.push({
-      name: 'Inter',
-      data: fontBoldBuffer,
-      weight: 700,
-      style: 'normal'
-    });
+    fonts.push({ name: 'Inter', data: fontBoldBuffer, weight: 700, style: 'normal' });
+  }
+  if (fontGroteskLightBuffer) {
+    fonts.push({ name: 'SpaceGrotesk', data: fontGroteskLightBuffer, weight: 300, style: 'normal' });
+  }
+  if (fontGroteskBoldBuffer) {
+    fonts.push({ name: 'SpaceGrotesk', data: fontGroteskBoldBuffer, weight: 700, style: 'normal' });
   }
   return fonts;
 }
 
-// Cached weather in memory to prevent rate-limits on every render
+// Cached weather in memory to prevent rate-limits on rapid refreshes
 let cachedWeather = null;
 let lastWeatherFetch = 0;
 
@@ -62,30 +61,12 @@ async function getOrFetchWeather() {
     return cachedWeather;
   }
   try {
-    const raw = await getWeatherData(28.6139, 77.2090); // Delhi coordinates
-    cachedWeather = {
-      cityName: 'New Delhi',
-      temperature: raw.temp,
-      conditionText: raw.desc,
-      highTemp: raw.tempMax,
-      lowTemp: raw.tempMin,
-      humidity: raw.humidity,
-      windSpeed: raw.windSpeed,
-      uvIndex: 4
-    };
+    cachedWeather = await getFigmaWeatherData(28.6139, 77.2090); // Delhi coordinates
     lastWeatherFetch = now;
     return cachedWeather;
   } catch (e) {
-    return cachedWeather || {
-      cityName: 'New Delhi',
-      temperature: 26,
-      conditionText: 'Clear Sky',
-      highTemp: 29,
-      lowTemp: 18,
-      humidity: 60,
-      windSpeed: 10,
-      uvIndex: 4
-    };
+    console.error('Weather fetch error:', e);
+    return cachedWeather || {};
   }
 }
 
@@ -144,12 +125,17 @@ async function handler(req, res) {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
     try {
+      // Optional query override: ?view=weather or ?view=clock
+      const viewParam = urlObj.searchParams.get('view');
+      const activeView = viewParam || globalConfig.active_view || 'clock';
+
       let layoutElement;
-      if (globalConfig.active_view === 'weather') {
+      if (activeView === 'weather') {
         const weather = await getOrFetchWeather();
         layoutElement = generateWeatherLayout(weather);
       } else {
-        layoutElement = generateClockLayout('Asia/Kolkata');
+        const f1Data = await getF1Data().catch(() => null);
+        layoutElement = generateClockLayout('Asia/Kolkata', f1Data);
       }
 
       const fonts = getFontConfig();
@@ -190,7 +176,6 @@ async function handler(req, res) {
       req.on('data', chunk => body += chunk);
       return req.on('end', () => {
         try {
-          // Can accept JSON or form URL-encoded
           let parsed;
           if (req.headers['content-type']?.includes('application/json')) {
             parsed = JSON.parse(body || '{}');
@@ -241,7 +226,7 @@ async function handler(req, res) {
     return res.end(renderAdminPortal(globalConfig));
   }
 
-  // Default redirect / to /admin or render admin directly
+  // Default redirect / to /admin
   if (urlPath === '/' || urlPath === '/index.html') {
     const { renderAdminPortal } = require('../templates/admin');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
