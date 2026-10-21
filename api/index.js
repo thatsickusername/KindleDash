@@ -96,6 +96,10 @@ async function getOrFetchNews() {
 
 // Night Mode Schedule Evaluator
 function checkNightModeStatus() {
+  // DEV OVERRIDE: Temporarily disabled for testing live screens at night
+  return { isNight: false, remainingSecondsToMorning: null };
+
+  /*
   if (!globalConfig.night_mode_enabled) {
     return { isNight: false, remainingSecondsToMorning: null };
   }
@@ -138,6 +142,7 @@ function checkNightModeStatus() {
 
   const remainingSeconds = Math.max(900, Math.min(21600, remainingMins * 60)); // clamp to script bounds
   return { isNight, remainingSecondsToMorning: remainingSeconds };
+  */
 }
 
 async function handler(req, res) {
