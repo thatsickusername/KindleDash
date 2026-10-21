@@ -1864,20 +1864,12 @@ main_loop() {
             suspend_fails=0
             log "WAKE n=$n slept=${SLEPT}s of ${iv}s"
         else
-            # Diagnostics BEFORE disarm_alarm clears the RTC register, so its
-            # value still reflects whatever state it was actually in at the
-            # moment of the early wake (a fired alarm typically reads back
-            # near-zero; a register still holding a FUTURE value means the
-            # alarm we armed is not what woke this).
+            # Manual wake triggered early (e.g. user pressed power button to cycle screen)
             suspend_hold_diag_snapshot "$wakeup_count_before"
             disarm_alarm
-            suspend_fails=$((suspend_fails + 1))
-            remain=$(( iv - SLEPT ))
-            [ "$remain" -lt 1 ] && remain=1
-            log "ERROR suspend did not hold: slept ${SLEPT}s of ${iv}s ($suspend_fails/$MAX_FAILS); staying awake ${remain}s"
-            push_log "suspend-not-held" 25
-            suspend_fallback_check
-            awake_sleep "$remain"
+            suspend_fails=0
+            log "WAKE (manual button press) n=$n slept=${SLEPT}s of ${iv}s; advancing to next screen"
+            # Loop will continue directly to top and fetch/draw the next screen immediately
         fi
     done
 }
