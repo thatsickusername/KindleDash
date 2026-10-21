@@ -813,6 +813,8 @@ fetch_and_draw() {   # $1 = "full" to force a flashing refresh
             if [ "$served" -ge "$MIN_INTERVAL" ] 2>/dev/null && \
                [ "$served" -le "$MAX_INTERVAL" ] 2>/dev/null; then
                 SERVED_INTERVAL="$served"
+                # Dynamically scale watchdog stale limit to prevent false reboots on 1h/2h/night sleep
+                WD_STALE=$(( SERVED_INTERVAL * 2 + 600 ))
             fi
             ;;
     esac
