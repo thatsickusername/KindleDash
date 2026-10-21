@@ -540,13 +540,16 @@ wifi_down() {
 wifi_up() {
     if command -v lipc-set-prop >/dev/null 2>&1; then
         lipc-set-prop com.lab126.cmd wirelessEnable 1 >/dev/null 2>&1
-        # Kindle OS: waking the radio only powers the hardware; trigger scan/reconnect to saved AP
+        # Kindle OS: waking the radio powers the hardware; trigger scan/reconnect
         lipc-set-prop com.lab126.wifid scan 1 >/dev/null 2>&1
         lipc-set-prop com.lab126.wifid connectLast 1 >/dev/null 2>&1 || lipc-set-prop com.lab126.wifid connect 1 >/dev/null 2>&1
-        return 0
+    fi
+    # Kindle 10th Gen (Broadcom dhd): wpa_supplicant manages wlan0; force immediate reassociation
+    if command -v wpa_cli >/dev/null 2>&1; then
+        wpa_cli -i wlan0 reassociate >/dev/null 2>&1 || wpa_cli reassociate >/dev/null 2>&1
     fi
     if command -v wifid >/dev/null 2>&1; then
-        wifid enable >/dev/null 2>&1 && return 0
+        wifid enable >/dev/null 2>&1
     fi
     iface=$(awk 'NR > 2 && /:/ { sub(/:$/, "", $1); print $1; exit }' /proc/net/wireless 2>/dev/null)
     [ -n "$iface" ] && command -v ifconfig >/dev/null 2>&1 && ifconfig "$iface" up >/dev/null 2>&1
