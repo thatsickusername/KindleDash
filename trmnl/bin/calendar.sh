@@ -539,7 +539,11 @@ wifi_down() {
 
 wifi_up() {
     if command -v lipc-set-prop >/dev/null 2>&1; then
-        lipc-set-prop com.lab126.cmd wirelessEnable 1 >/dev/null 2>&1 && return 0
+        lipc-set-prop com.lab126.cmd wirelessEnable 1 >/dev/null 2>&1
+        # Kindle OS: waking the radio only powers the hardware; trigger scan/reconnect to saved AP
+        lipc-set-prop com.lab126.wifid scan 1 >/dev/null 2>&1
+        lipc-set-prop com.lab126.wifid connectLast 1 >/dev/null 2>&1 || lipc-set-prop com.lab126.wifid connect 1 >/dev/null 2>&1
+        return 0
     fi
     if command -v wifid >/dev/null 2>&1; then
         wifid enable >/dev/null 2>&1 && return 0
@@ -641,13 +645,9 @@ wifi_diag_snapshot() {   # $1 = short context tag
 # fresh association. Costs a few seconds and is safe when the radio is healthy.
 wifi_reset() {
     wifi_down
-    sleep 3
-    if command -v wifid >/dev/null 2>&1; then
-        wifid disable >/dev/null 2>&1
-        wifid enable  >/dev/null 2>&1
-    fi
+    sleep 2
     wifi_up
-    sleep 5
+    sleep 3
     return 0
 }
 
